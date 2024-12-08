@@ -7,4 +7,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\JWAdventOfCodeHandlerLibrary\JWAdventOfCodeHandlerLibrary.csproj" />
+    <ProjectReference Include="..\JWAdventOfCodeHandlingLibrary\JWAdventOfCodeHandlingLibrary.csproj" />
+  </ItemGroup>
+
 </Project>

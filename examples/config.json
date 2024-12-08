@@ -1,0 +1,15 @@
+{
+  "JWAdventOfCodeVSCSCA_1.0.0.20241203201300": {
+    "tasks_src": "downloads/JWAdventOfCode/tasks",
+    "inputs_src": "downloads/JWAdventOfCode/src",
+    "tests_src": "downloads/JWAdventOfCode/src",
+    "results_trg": "home",
+    "result_trg": "results.csv",
+    "programs": {
+      "MyProg24": {
+        "type": "exe",
+        "src": "solutions/2024/MyProgram2024.exe"
+      }
+    }
+  }
+}
