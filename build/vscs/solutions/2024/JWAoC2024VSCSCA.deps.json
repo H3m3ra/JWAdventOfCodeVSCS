@@ -1,0 +1,56 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "JWAoC2024VSCSCA/1.0.0": {
+        "dependencies": {
+          "JWAdventOfCodeHandlingLibrary": "1.0.0",
+          "JWAdventOfCodeProgramLibrary": "1.0.0"
+        },
+        "runtime": {
+          "JWAoC2024VSCSCA.dll": {}
+        }
+      },
+      "JWAdventOfCodeHandlingLibrary/1.0.0": {
+        "runtime": {
+          "JWAdventOfCodeHandlingLibrary.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      },
+      "JWAdventOfCodeProgramLibrary/1.0.0": {
+        "dependencies": {
+          "JWAdventOfCodeHandlingLibrary": "1.0.0"
+        },
+        "runtime": {
+          "JWAdventOfCodeProgramLibrary.dll": {
+            "assemblyVersion": "1.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "JWAoC2024VSCSCA/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "JWAdventOfCodeHandlingLibrary/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "JWAdventOfCodeProgramLibrary/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
