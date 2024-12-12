@@ -285,7 +285,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     {
         if (!File.Exists(Settings.Programs[programName].ProgramFilePath))
         {
-            return new JWAoCHTTPResponse(404, new JWAoCHTTPProblemDetails("Program is not available!", 404));
+            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program is not available!", 404));
         }
 
         var startInfo = new ProcessStartInfo();
@@ -330,7 +330,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         }
         catch(Exception ex)
         {
-            return new JWAoCHTTPResponse(500, new JWAoCHTTPProblemDetails(ex.Message, 500));
+            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails(ex.Message, 422));
         }
     }
 

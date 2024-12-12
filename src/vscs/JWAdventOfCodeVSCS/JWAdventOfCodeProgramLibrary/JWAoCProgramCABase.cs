@@ -52,14 +52,14 @@ public abstract class JWAoCProgramCABase : IJWAoCProgramCA
         }
         else
         {
-            Print(JWAoCHTTPResponse.BAD_REQUEST);
+            Print(IJWAoCHTTPResponse.BAD_REQUEST);
         }
     }
 
     protected abstract void ConsoleResponseToLocalHTTPSolveRequest(string version, int taskYear, int taskDay, string subTask, Dictionary<string, string> parameters);
 
     // print-methods
-    protected void Print(JWAoCHTTPResponse response)
+    protected void Print(IJWAoCHTTPResponse response)
     {
         Console.WriteLine(response.ToString());
     }
