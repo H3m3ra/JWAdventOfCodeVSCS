@@ -1,8 +1,19 @@
 ﻿namespace JWAdventOfCodeHandlerLibrary.Services;
 
-public class JWAoCFileService
+public class JWAoCIOService : IJWAoCIOService
 {
-    public static IList<string> GetSourceFilePaths(string sourcePath, Func<string, bool> allowFilePath)
+    // get-methods
+    public ISet<string> GetSourceFilePaths(Func<string, bool> allowFilePath, params string[] sourcePaths)
+    {
+        ISet<string> sourceFilePaths = new HashSet<string>();
+        foreach (string sourcePath in sourcePaths)
+        {
+            GetSourceFilePaths(Path.GetFullPath(sourcePath), allowFilePath, sourceFilePaths);
+        }
+        return sourceFilePaths;
+    }
+
+    protected ISet<string> GetSourceFilePaths(string sourcePath, Func<string, bool> allowFilePath, ISet<string> sourceFilePaths)
     {
         if (!File.Exists(sourcePath))
         {
@@ -20,7 +31,6 @@ public class JWAoCFileService
         {
             try
             {
-                IList<string> sourceFilePaths = new List<string>();
                 foreach (var filePath in Directory.GetFiles(sourcePath))
                 {
                     if (allowFilePath(filePath))
@@ -30,26 +40,22 @@ public class JWAoCFileService
                 }
                 foreach (var directoryPath in Directory.GetDirectories(sourcePath))
                 {
-                    foreach (string filePath in GetSourceFilePaths(directoryPath, allowFilePath))
+                    foreach (string filePath in GetSourceFilePaths(directoryPath, allowFilePath, sourceFilePaths))
                     {
                         sourceFilePaths.Add(filePath);
                     }
                 }
-                return sourceFilePaths;
             }
             catch
             {
 
             }
         }
-        else
+        else if (allowFilePath(sourcePath))
         {
-            if (allowFilePath(sourcePath))
-            {
-                return new string[] { sourcePath };
-            }
+            sourceFilePaths.Add(sourcePath);
         }
-        return new string[] { };
-    }
 
+        return sourceFilePaths;
+    }
 }

@@ -19,4 +19,17 @@ public interface IJWAoCHTTPResponse
     public string StatusName { get; set; }
 
     public object Content { get; set; }
+
+    // static-method
+    public static string GetStatusNameOf(int statusCode)
+    {
+        if (STATUS_CODE_NAMES.ContainsKey(statusCode))
+        {
+            return "Unknown";
+        }
+        return STATUS_CODE_NAMES[statusCode];
+    }
+
+    // to-methods
+    public string ToString(bool inline = false);
 }
