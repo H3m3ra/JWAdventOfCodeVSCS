@@ -1,4 +1,8 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
+using JWAdventOfCodeHandlerLibrary.Data;
+using JWAdventOfCodeHandlerLibrary.Settings;
+using JWAdventOfCodeHandlerLibrary.Settings.Program;
+using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAdventOfCodeHandlingLibrary.Services;
 using System.Text.RegularExpressions;
 
@@ -73,6 +77,62 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
             ProgramArgs = programArgs,
             Source = originalSource
         };
+    }
+
+    // methods
+    public bool Execute(IJWAoCSettings settings, JWAoCHandlerVSCS handler)
+    {
+        if (handler.LoadSettrings("  Cannot ", true) && settings.Programs.ContainsKey(ProgramName))
+        {
+            var program = settings.Programs[ProgramName];
+
+            var inputFilePath = handler.GetSourceFilePaths(new string[] { settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).FirstOrDefault();
+            if (string.IsNullOrEmpty(inputFilePath))
+            {
+                inputFilePath = handler.GetSourceFilePaths(new string[] { settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).FirstOrDefault();
+            }
+
+            JWAoCProgram.GetHighestVersionOf(program.GetVersions(handler.ProgramExecutionService));
+            var start = DateTime.Now;
+            var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(handler.ProgramExecutionService));
+            var referenceDuration = DateTime.Now - start;
+            IJWAoCHTTPResponse response;
+
+            if (string.IsNullOrEmpty(version))
+            {
+                response = new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404));
+            }
+            else
+            {
+                var args = GetSolveCallArgs(version, (int)handler.CurrentYear, (int)handler.CurrentDay, handler.CurrentSub, inputFilePath);
+                handler.PrintLineOut($"  \"{ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+
+                start = DateTime.Now;
+                response = handler.ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
+                var durations = DateTime.Now - start - referenceDuration;
+
+                handler.PrintLineOut($"  ...\"{ProgramName}\" finished. ({durations[i]})");
+                handler.ResultHandlerService.HandleResult(
+                    new JWAoCResult()
+                    {
+                        Timestamp = DateTime.Now,
+                        TaskYear = (int)handler.CurrentYear,
+                        TaskDay = (int)handler.CurrentDay,
+                        SubTask = handler.CurrentSub,
+                        Duration = durations[i],
+                        ProgramName = ProgramName,
+                        Program = program,
+                        ProgramArgs = args,
+                        Response = response
+                    },
+                    settings,
+                    this
+                );
+            }
+            if (response.StatusCode == 200) handler.PrintLineOut($"{response.Content.ToString()}");
+            else handler.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+        }
+        return true;
     }
 
     // get-methods

@@ -90,81 +90,10 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
         if (command is JWAoCCallCommand)
         {
-            var currentCommand = (JWAoCCallCommand)command;
-            Settings = SettingsSerializer.LoadSettings();
             CurrentYear = 2024;
             CurrentDay = 1;
             CurrentSub = "a";
-            if (Settings.Programs.ContainsKey(currentCommand.ProgramName))
-            {
-                var program = Settings.Programs[currentCommand.ProgramName];
-
-                var inputFilePath = GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).FirstOrDefault();
-                if (string.IsNullOrEmpty(inputFilePath))
-                {
-                    inputFilePath = GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).FirstOrDefault();
-                }
-
-                JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
-                var start = DateTime.Now;
-                var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
-                var referenceDuration = DateTime.Now - start;
-
-                if (string.IsNullOrEmpty(version))
-                {
-                    var response = new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404));
-                    if (response.StatusCode == 200)
-                    {
-                        PrintLineOut($"{response.Content.ToString()}");
-                    }
-                    else
-                    {
-                        PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
-                    }
-                }
-                else
-                {
-                    var args = currentCommand.GetSolveCallArgs(version, (int)CurrentYear, (int)CurrentDay, CurrentSub, inputFilePath);
-                    PrintLineOut($"  \"{currentCommand.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
-
-                    int repeat = 1;
-
-                    var durations = new TimeSpan[repeat];
-                    for (int i = 0; i < repeat; i++)
-                    {
-                        start = DateTime.Now;
-                        var response = ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
-                        durations[i] = DateTime.Now - start - referenceDuration;
-
-                        PrintLineOut($"  ...\"{currentCommand.ProgramName}\" finished. ({durations[i]})");
-                        ResultHandlerService.HandleResult(
-                            new JWAoCResult()
-                            {
-                                Timestamp = DateTime.Now,
-                                TaskYear = (int)CurrentYear,
-                                TaskDay = (int)CurrentDay,
-                                SubTask = CurrentSub,
-                                Duration = durations[i],
-                                ProgramName = currentCommand.ProgramName,
-                                Program = program,
-                                ProgramArgs = args,
-                                Response = response
-                            },
-                            Settings,
-                            this
-                        );
-                        if (response.StatusCode == 200)
-                        {
-                            PrintLineOut($"{response.Content.ToString()}");
-                        }
-                        else
-                        {
-                            PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
-                        }
-                    }
-                }
-            }
-            return true;
+            return ((JWAoCCallCommand)command).Execute(Settings, this);
         }
         else if (command is JWAoCGetCommand)
         {
@@ -317,7 +246,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     }
 
     // load-methods
-    protected bool LoadSettrings(string exceptionPrefixText, bool printPrefix=false)
+    public bool LoadSettrings(string exceptionPrefixText, bool printPrefix=false)
     {
         try
         {
