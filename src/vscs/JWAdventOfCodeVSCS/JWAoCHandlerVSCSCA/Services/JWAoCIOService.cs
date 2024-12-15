@@ -1,4 +1,6 @@
-﻿namespace JWAdventOfCodeHandlerLibrary.Services;
+﻿using JWAdventOfCodeHandlerLibrary.Services;
+
+namespace JWAoCHandlerVSCSCA.Services;
 
 public class JWAoCIOService : IJWAoCIOService
 {

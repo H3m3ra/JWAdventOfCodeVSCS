@@ -1,11 +1,12 @@
-﻿using JWAdventOfCodeHandlerLibrary.Services;
-using JWAoCHandlerVSCSCA;
+﻿using JWAoCHandlerVSCSCA;
+using JWAoCHandlerVSCSCA.Services;
 
 var interactive = false;
 
 using (var currentAoCVSCS = new JWAoCHandlerVSCS() {
     IOService = new JWAoCIOService(),
-    ProgramExecutionService = new JWAoCProgramExecutionService()
+    ProgramExecutionService = new JWAoCProgramExecutionService(),
+    ResultHandlerService = new JWAoCResultCSVHandlerServices()
 })
 {
     if (currentAoCVSCS.Init(args))

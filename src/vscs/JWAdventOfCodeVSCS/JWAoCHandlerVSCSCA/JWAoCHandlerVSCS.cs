@@ -1,5 +1,6 @@
 ﻿using JWAdventOfCodeHandlerLibrary;
 using JWAdventOfCodeHandlerLibrary.Command;
+using JWAdventOfCodeHandlerLibrary.Data;
 using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
@@ -28,6 +29,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
     public IJWAoCIOService IOService { get; set; }
     public IJWAoCProgramExecutionService ProgramExecutionService { get; set; }
+    public IJWAoCResultHandlerService ResultHandlerService { get; set; }
 
     public int? CurrentYear { get; set; } = null;
     public int? CurrentDay { get; set; } = null;
@@ -135,15 +137,21 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                         durations[i] = DateTime.Now - start - referenceDuration;
 
                         PrintLineOut($"  ...\"{currentCommand.ProgramName}\" finished. ({durations[i]})");
-                        StoreResult(
-                            "  ",
-                            DateTime.Now,
-                            $"{CurrentYear}-{CurrentDay}{CurrentSub}",
-                            durations[i],
-                            currentCommand.ProgramName,
-                            program.ProgramFilePath,
-                            args,
-                            response
+                        ResultHandlerService.HandleResult(
+                            new JWAoCResult()
+                            {
+                                Timestamp = DateTime.Now,
+                                TaskYear = (int)CurrentYear,
+                                TaskDay = (int)CurrentDay,
+                                SubTask = CurrentSub,
+                                Duration = durations[i],
+                                ProgramName = currentCommand.ProgramName,
+                                Program = program,
+                                ProgramArgs = args,
+                                Response = response
+                            },
+                            Settings,
+                            this
                         );
                         if (response.StatusCode == 200)
                         {
@@ -436,14 +444,14 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     }
 
     // print-methods
-    protected override void PrintPrefixIn()
+    public override void PrintPrefixIn()
     {
         Console.Write(PROGRAM_NAME_SHORT);
         PrintPrefixLevel();
         Console.Write("> ");
     }
 
-    protected override void PrintPrefixOut()
+    public override void PrintPrefixOut()
     {
         Console.Write('<');
         Console.Write(PROGRAM_NAME_SHORT);

@@ -31,7 +31,7 @@ public abstract class JWAoCCABase : IJWAoCCA
     public abstract bool ExecuteCommand(IJWAoCCommand command);
 
     // print-methods
-    protected void PrintLinesIn(params string[] lines)
+    public void PrintLinesIn(params string[] lines)
     {
         if (!Silent)
         {
@@ -43,7 +43,7 @@ public abstract class JWAoCCABase : IJWAoCCA
         }
     }
 
-    protected void PrintLinesOut(params string[] lines)
+    public void PrintLinesOut(params string[] lines)
     {
         if (!Silent)
         {
@@ -55,7 +55,7 @@ public abstract class JWAoCCABase : IJWAoCCA
         }
     }
 
-    protected void PrintLineIn(params string[] parts)
+    public void PrintLineIn(params string[] parts)
     {
         if (!Silent)
         {
@@ -65,7 +65,7 @@ public abstract class JWAoCCABase : IJWAoCCA
         }
     }
 
-    protected void PrintLineOut(params string[] parts)
+    public void PrintLineOut(params string[] parts)
     {
         if (!Silent)
         {
@@ -75,11 +75,11 @@ public abstract class JWAoCCABase : IJWAoCCA
         }
     }
 
-    protected abstract void PrintPrefixIn();
+    public abstract void PrintPrefixIn();
 
-    protected abstract void PrintPrefixOut();
+    public abstract void PrintPrefixOut();
 
-    protected void Print(params string[] parts)
+    public void Print(params string[] parts)
     {
         if (!Silent)
         {
@@ -91,7 +91,7 @@ public abstract class JWAoCCABase : IJWAoCCA
     }
 
     // get-methods
-    protected IList<string> GetLinesIn(int emptyLines)
+    public IList<string> GetLinesIn()
     {
         IList<string> lines = new List<string>();
 
@@ -106,5 +106,10 @@ public abstract class JWAoCCABase : IJWAoCCA
         lines.RemoveAt(lines.Count - 1);
 
         return lines;
+    }
+
+    public string GetLineIn()
+    {
+        return null;
     }
 }

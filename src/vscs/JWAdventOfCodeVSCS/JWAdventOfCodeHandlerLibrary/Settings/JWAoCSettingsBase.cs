@@ -20,7 +20,7 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
     [JsonPropertyName("result_trg")]
     public virtual string SpecificResultTargetPath { get; set; } = "results.csv";
     [JsonIgnore]
-    public virtual string ResultTargetPath { get { return Path.Join(ResultsTargetPath, SpecificResultTargetPath); } }
+    public virtual string ResultTargetPath { get { return Path.Join(ResultsTargetPath, SpecificResultTargetPath); } set { } }
 
     [JsonPropertyName("programs")]
     public Dictionary<string, JWAoCProgram> Programs { get; set; } = new Dictionary<string, JWAoCProgram>();

@@ -14,6 +14,8 @@ public interface IJWAoCSettings
 
     public string SpecificResultTargetPath { get; set; }
 
+    public string ResultTargetPath { get; set; }
+
     public Dictionary<string, JWAoCProgram> Programs { get; set; }
 
     // init-methods
