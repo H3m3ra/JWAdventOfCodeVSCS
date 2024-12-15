@@ -13,7 +13,7 @@
 			+ saving results and metrics in a .csv
 			+ calling extern solving programs through "JWAoCProgramInterface"
 		The handler is implemented in multiple languages:
-			+ JWAoCHandlerVSCSCA (unfinished)
+			+ JWAoCHandlerVSCSCA - see doc/handlers/JWAoCHandlerVSCSCA for more.
 
 	2. Presenting own solutions for AoC
 		+ JWAoC2024VSCSCA (active working)
