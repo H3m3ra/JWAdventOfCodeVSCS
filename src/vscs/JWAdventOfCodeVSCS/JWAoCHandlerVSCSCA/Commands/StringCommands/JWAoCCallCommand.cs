@@ -109,9 +109,9 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
 
                 start = DateTime.Now;
                 response = handler.ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
-                var durations = DateTime.Now - start - referenceDuration;
+                var duration = DateTime.Now - start - referenceDuration;
 
-                handler.PrintLineOut($"  ...\"{ProgramName}\" finished. ({durations[i]})");
+                handler.PrintLineOut($"  ...\"{ProgramName}\" finished. ({duration})");
                 handler.ResultHandlerService.HandleResult(
                     new JWAoCResult()
                     {
@@ -119,14 +119,14 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
                         TaskYear = (int)handler.CurrentYear,
                         TaskDay = (int)handler.CurrentDay,
                         SubTask = handler.CurrentSub,
-                        Duration = durations[i],
+                        Duration = duration,
                         ProgramName = ProgramName,
                         Program = program,
                         ProgramArgs = args,
                         Response = response
                     },
                     settings,
-                    this
+                    handler
                 );
             }
             if (response.StatusCode == 200) handler.PrintLineOut($"{response.Content.ToString()}");

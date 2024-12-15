@@ -91,7 +91,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         if (command is JWAoCCallCommand)
         {
             CurrentYear = 2024;
-            CurrentDay = 1;
+            CurrentDay = 4;
             CurrentSub = "a";
             return ((JWAoCCallCommand)command).Execute(Settings, this);
         }
@@ -311,25 +311,16 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         bool AllowedFilePath(string filePath)
         {
             return regex.Match(filePath).Success ||
-                (CurrentYear == null || filePath.Contains(CurrentYear.ToString())) ||
-                (CurrentDay == null || filePath.Contains(CurrentDay.ToString())) ||
-                (CurrentSub == null || filePath.Contains(CurrentSub));
+                (CurrentYear == null || new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
+                (CurrentDay == null || new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
+                (CurrentSub == null || new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(filePath).Success);
         }
-        var x = IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths).Select(s => Tuple.Create(
-                regex.Match(s).Success,
-                CurrentYear == null || s.Contains(CurrentYear.ToString()),
-                CurrentDay == null || s.Contains(CurrentDay.ToString()),
-                CurrentSub == null || s.Contains(CurrentSub),
-                s
-            ))
-            .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
-            ;
         return IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
             .Select(s => Tuple.Create(
                 regex.Match(s).Success,
-                CurrentYear == null || s.Contains(CurrentYear.ToString()),
-                CurrentDay == null || s.Contains(CurrentDay.ToString()),
-                CurrentSub == null || s.Contains(CurrentSub),
+                (CurrentYear != null && new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(s).Success),
+                (CurrentDay != null && new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(s).Success),
+                (CurrentSub != null && new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(s).Success),
                 s
             ))
             .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
