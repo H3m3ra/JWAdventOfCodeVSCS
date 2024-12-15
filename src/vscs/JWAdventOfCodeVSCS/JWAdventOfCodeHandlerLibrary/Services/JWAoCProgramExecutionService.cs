@@ -60,8 +60,18 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
                     process.WaitForExit();
                 }
 
-                int currentHTTPStatus = int.Parse(new Regex("\\d\\d\\d").Match(currentHTTPHeaders.First()).Value);
-                return new JWAoCHTTPResponse(currentHTTPStatus, string.IsNullOrEmpty(currentHTTPBodyText) ? null : JsonSerializer.Deserialize<object>(currentHTTPBodyText));
+                return new JWAoCHTTPResponse()
+                    {
+                        Version = new Regex(@"HTTP/\d+\.\d+").Match(currentHTTPHeaders.First()).Value.Substring(5),
+                        StatusCode = int.Parse(new Regex("\\d\\d\\d").Match(currentHTTPHeaders.First()).Value),
+                        Headers = new Dictionary<string, string> (
+                                currentHTTPHeaders
+                                .Skip(1)
+                                .Select(l => { var ps = l.Split(": "); return KeyValuePair.Create(ps[0], ps[1]); })
+                                .ToList()
+                            ),
+                        Content = string.IsNullOrEmpty(currentHTTPBodyText) ? null : currentHTTPBodyText
+                    };
             }
             catch (Exception ex)
             {
@@ -69,10 +79,10 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
             }
 
         }
-        /*else if (program.ProgramType == JWAoCProgramType.RAW)
+        else if (program.ProgramType == JWAoCProgramType.RAW)
         {
-            
-        }*/
+            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program type not supported!", 501));
+        }
         else
         {
             return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program type not supported!", 400));

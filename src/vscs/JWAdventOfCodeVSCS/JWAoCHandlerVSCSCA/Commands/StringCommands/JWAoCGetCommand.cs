@@ -1,4 +1,7 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
+using JWAdventOfCodeHandlerLibrary.Services;
+using JWAdventOfCodeHandlerLibrary.Settings;
+using JWAdventOfCodeHandlerLibrary.Settings.Program;
 
 namespace JWAoCHandlerVSCSCA.Commands.StringCommands;
 
@@ -47,16 +50,14 @@ public class JWAoCGetCommand : JWAoCStringCommandBase
     }
 
     // get-methods
-    public IList<string> GetValues(JWAoCHandlerVSCS handler)
+    public IList<string> GetValues(IJWAoCSettings settings, IJWAoCProgramExecutionService programExecutionService)
     {
-        var settings = handler.Settings;
-
         if (Args.Length == 0)
         {
             var lines = new List<string>();
             lines.Add("inputs_src:  " + settings.InputsSourcePath);
             lines.Add("results_trg: " + settings.ResultsTargetPath);
-            lines.Add("result_trg:  " + settings.ResultTargetPath);
+            lines.Add("result_trg:  " + settings.SpecificResultTargetPath);
             lines.Add("tasks_src:   " + settings.TasksSourcePath);
             lines.Add("tests_src:   " + settings.TestsSourcePath);
             lines.Add("programs:    ");
@@ -73,14 +74,20 @@ public class JWAoCGetCommand : JWAoCStringCommandBase
             lines.Add("programs:    ");
             foreach (var entry in settings.Programs)
             {
-                lines.Add($"  \"{entry.Key}\" ({entry.Value.Type}) \"{entry.Value.ProgramFilePath}\"");
-                lines.Add($"    type: {entry.Value.Type}");
-                lines.Add($"    path: \"{entry.Value.ProgramFilePath}\"");
+                var program = entry.Value;
+                lines.Add($"  \"{entry.Key}\" ({program.Type}) \"{program.ProgramFilePath}\"");
+                lines.Add($"    type: {program.Type}");
+                lines.Add($"    path: \"{program.ProgramFilePath}\"");
                 if (entry.Value.IsAvailable())
                 {
-                    lines.Add($"    versions: \"{handler.ExecuteProgramWithHTTPGet(entry.Key, "/versions")}\"");
-                    lines.Add($"    author:   \"{handler.ExecuteProgramWithHTTPGet(entry.Key, "/v1/author")}\"");
-                    lines.Add($"    version:  \"{handler.ExecuteProgramWithHTTPGet(entry.Key, "/v1/version")}\"");
+                    var versions = program.GetVersions(programExecutionService);
+                    lines.Add($"    versions: [{string.Join(", ", versions)}]");
+                    var version = JWAoCProgram.GetHighestVersionOf(versions);
+                    lines.Add($"    version:  \"{version}\"");
+                    var result = programExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author");
+                    lines.Add($"    author:   {(result.StatusCode == 200 ? $"{result.Content.ToString()}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
+                    result = programExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version");
+                    lines.Add($"    version:  {(result.StatusCode == 200 ? $"{result.Content.ToString()}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
                 }
                 else
                 {
@@ -90,7 +97,7 @@ public class JWAoCGetCommand : JWAoCStringCommandBase
             return lines;
         }
         else if (PropertyName == "results_trg") return new string[] { settings.ResultsTargetPath };
-        else if (PropertyName == "results_trg") return new string[] { settings.ResultTargetPath };
+        else if (PropertyName == "results_trg") return new string[] { settings.SpecificResultTargetPath };
         else if (PropertyName == "tasks_src") return new string[] { settings.TasksSourcePath };
         else/*if (PropertyName == "tests_src")*/ return new string[] { settings.TestsSourcePath };
     }

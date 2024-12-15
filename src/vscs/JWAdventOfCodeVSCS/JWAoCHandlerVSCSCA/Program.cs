@@ -1,14 +1,19 @@
-﻿using JWAoCHandlerVSCSCA;
+﻿using JWAdventOfCodeHandlerLibrary.Services;
+using JWAoCHandlerVSCSCA;
 
 var interactive = false;
 
-using (var currentAoCVSCS = new JWAoCHandlerVSCS())
+using (var currentAoCVSCS = new JWAoCHandlerVSCS() {
+    IOService = new JWAoCIOService(),
+    ProgramExecutionService = new JWAoCProgramExecutionService()
+})
 {
-    currentAoCVSCS.Init(args);
-
-    if (currentAoCVSCS.Interactive)
+    if (currentAoCVSCS.Init(args))
     {
-        while (currentAoCVSCS.ExecuteConsoleCommand()) { }
+        if (currentAoCVSCS.Interactive)
+        {
+            while (currentAoCVSCS.ExecuteConsoleCommand()) { }
+        }
     }
 
     interactive = currentAoCVSCS.Interactive;

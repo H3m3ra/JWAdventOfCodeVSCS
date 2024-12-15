@@ -5,7 +5,6 @@ using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Commands.StringCommands;
-using System.Diagnostics;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -19,9 +18,16 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public const string PROGRAM_VERSION = "v1.0";
     public const string PROGRAM_NAME_SHORT = "AoCVSCS";
 
+    public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
+    public static readonly Regex INPUT_REGEX = new Regex("input", RegexOptions.IgnoreCase);
+    public static readonly Regex TEST_REGEX = new Regex("test", RegexOptions.IgnoreCase);
+
     public const string TASK_SUFFIX = "_task.txt";
     public const string INPUT_SUFFIX = "_input.txt";
     public const string TEST_SUFFIX = "_test.txt";
+
+    public IJWAoCIOService IOService { get; set; }
+    public IJWAoCProgramExecutionService ProgramExecutionService { get; set; }
 
     public int? CurrentYear { get; set; } = null;
     public int? CurrentDay { get; set; } = null;
@@ -43,22 +49,9 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         Silent = options.Contains("-s");
         Interactive = options.Contains("-i");
 
-        if (!Silent) Console.Write($"{PROGRAM_NAME} {PROGRAM_VERSION} starting...");
-        try
-        {
-            Settings = SettingsSerializer.LoadSettings();
-        }
-        catch
-        {
-            if (!Silent) Console.WriteLine($" cannot load settings \"{SettingsSerializer.ConfigFilePath}\"!");
-            return false;
-        }
-
-        if (!Settings.Init())
-        {
-            if (!Silent) Console.WriteLine(" cannot initalize settings!");
-            return false;
-        }
+        Print($"{PROGRAM_NAME} {PROGRAM_VERSION} starting...");
+        if (!LoadSettrings(" cannot ")) return false;
+        Print($"{Environment.NewLine}");
 
         if (options.Contains("-f") && args.Length >= 2)
         {
@@ -71,23 +64,21 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             }
             catch
             {
-                if (!Silent) Console.WriteLine($"Cannot execute file from path \"{args[1]}\"!");
+                Print($"Cannot execute file from path \"{args[1]}\"!{Environment.NewLine}");
             }
         }
-
-        if (!Silent) Console.WriteLine();
         return true;
     }
 
     public override void Dispose()
     {
-        if (!Silent) Console.WriteLine($"...{PROGRAM_NAME} finished.");
+        Print($"...{PROGRAM_NAME} finished.{Environment.NewLine}");
     }
 
     // methods
     protected override bool ExecuteCommand(string source)
     {
-        if (String.IsNullOrEmpty(source)) return true;
+        if (string.IsNullOrEmpty(source)) return true;
         return ExecuteCommand(GetCommandOfString(source));
     }
 
@@ -104,31 +95,65 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             CurrentSub = "a";
             if (Settings.Programs.ContainsKey(currentCommand.ProgramName))
             {
-                var inputFilePath = GetSourceFilePaths(Settings.InputsSourcePath, "_input.txt", (CurrentDay == null ? null : CurrentDay.ToString()), CurrentSub).FirstOrDefault();
-                if (String.IsNullOrEmpty(inputFilePath))
+                var program = Settings.Programs[currentCommand.ProgramName];
+
+                var inputFilePath = GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).FirstOrDefault();
+                if (string.IsNullOrEmpty(inputFilePath))
                 {
-                    inputFilePath = GetSourceFilePaths(Settings.InputsSourcePath, "_input.txt", (CurrentDay == null ? null : CurrentDay.ToString())).FirstOrDefault();
+                    inputFilePath = GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).FirstOrDefault();
                 }
 
-                if (Settings.Programs[currentCommand.ProgramName].ProgramType == JWAoCProgramType.EXE)
+                JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
+                var start = DateTime.Now;
+                var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
+                var referenceDuration = DateTime.Now - start;
+
+                if (string.IsNullOrEmpty(version))
                 {
-                    var args = currentCommand.GetSolveCallArgs("v1", (int)CurrentYear, (int)CurrentDay, CurrentSub, inputFilePath);
-                    PrintLineOut($"  \"{currentCommand.ProgramName}\" with \"{String.Join(" ", args)}\" starting...");
-
-                    var start = DateTime.Now;
-                    var result = ExecuteProgramWithHTTPGet(currentCommand.ProgramName, "/versions");
-                    var referenceDuration = DateTime.Now - start;
-
-                    start = DateTime.Now;
-                    result = ExecuteProgram(currentCommand.ProgramName, args);
-                    var duration = DateTime.Now - start;
-
-                    PrintLineOut($"  ...\"{currentCommand.ProgramName}\" finished. ({duration})");
-                    if (!String.IsNullOrEmpty(Settings.ResultTargetPath))
+                    var response = new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404));
+                    if (response.StatusCode == 200)
                     {
-                        PrintLineOut($"  store result...");
+                        PrintLineOut($"{response.Content.ToString()}");
                     }
-                    PrintLineOut($"  {result}");
+                    else
+                    {
+                        PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+                    }
+                }
+                else
+                {
+                    var args = currentCommand.GetSolveCallArgs(version, (int)CurrentYear, (int)CurrentDay, CurrentSub, inputFilePath);
+                    PrintLineOut($"  \"{currentCommand.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+
+                    int repeat = 1;
+
+                    var durations = new TimeSpan[repeat];
+                    for (int i = 0; i < repeat; i++)
+                    {
+                        start = DateTime.Now;
+                        var response = ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
+                        durations[i] = DateTime.Now - start - referenceDuration;
+
+                        PrintLineOut($"  ...\"{currentCommand.ProgramName}\" finished. ({durations[i]})");
+                        StoreResult(
+                            "  ",
+                            DateTime.Now,
+                            $"{CurrentYear}-{CurrentDay}{CurrentSub}",
+                            durations[i],
+                            currentCommand.ProgramName,
+                            program.ProgramFilePath,
+                            args,
+                            response
+                        );
+                        if (response.StatusCode == 200)
+                        {
+                            PrintLineOut($"{response.Content.ToString()}");
+                        }
+                        else
+                        {
+                            PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+                        }
+                    }
                 }
             }
             return true;
@@ -136,8 +161,10 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         else if (command is JWAoCGetCommand)
         {
             var currentCommand = (JWAoCGetCommand)command;
-            Settings = SettingsSerializer.LoadSettings();
-            PrintLinesOut(currentCommand.GetValues(this).ToArray());
+            if(LoadSettrings("  Cannot ", true))
+            {
+                PrintLinesOut(currentCommand.GetValues(Settings, ProgramExecutionService).ToArray());
+            }
             return true;
         }
         else if(command is JWAoCSetCommand)
@@ -235,13 +262,10 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             }
             else if (currentCommand.Name.StartsWith("cr"))
             {
-                string filePath = GetSourceFilePaths(
-                    Settings.TasksSourcePath,
-                    $"{(CurrentDay < 10 ? "0" : "")}{CurrentDay}{CurrentSub}_task.txt"
-                ).FirstOrDefault();
-                if (String.IsNullOrEmpty(filePath))
+                var taskFilePath = GetSourceFilePaths(new string[] { Settings.TasksSourcePath }, new Regex("task", RegexOptions.IgnoreCase)).FirstOrDefault();
+                if (string.IsNullOrEmpty(taskFilePath))
                 {
-                    filePath = $"{Settings.TasksSourcePath}{Path.DirectorySeparatorChar}{CurrentYear}{Path.DirectorySeparatorChar}{(CurrentDay < 10 ? "0" : "")}{CurrentDay}{CurrentSub}_task.txt";
+                    taskFilePath = $"{Settings.TasksSourcePath}{Path.DirectorySeparatorChar}{CurrentYear}{Path.DirectorySeparatorChar}{(CurrentDay < 10 ? "0" : "")}{CurrentDay}{CurrentSub}_task.txt";
                 }
 
                 IList<string> lines = new List<string>();
@@ -251,86 +275,19 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                     lines.Add(line);
                 }
                 lines.RemoveAt(lines.Count - 1);
-                File.WriteAllText(filePath, String.Join(Environment.NewLine, lines));
+                File.WriteAllText(taskFilePath, string.Join(Environment.NewLine, lines));
             }
             else if (currentCommand.Name.StartsWith("sh"))
             {
-                if (CurrentYear == null)
-                {
-                    PrintLinesOut(GetSourceFilePaths(Settings.TasksSourcePath).ToArray());
-                    PrintLinesOut(GetSourceFilePaths(Settings.InputsSourcePath).ToArray());
-                    PrintLinesOut(GetSourceFilePaths(Settings.TestsSourcePath).ToArray());
-                }
-                else
-                {
-                    PrintLinesOut(GetSourceFilePaths(Settings.TasksSourcePath + Path.DirectorySeparatorChar + CurrentYear).ToArray());
-                    PrintLinesOut(GetSourceFilePaths(Settings.InputsSourcePath + Path.DirectorySeparatorChar + CurrentYear).ToArray());
-                    PrintLinesOut(GetSourceFilePaths(Settings.TestsSourcePath + Path.DirectorySeparatorChar + CurrentYear).ToArray());
-                }
+                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.TasksSourcePath }, TASK_REGEX).ToArray());
+                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).ToArray());
+                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.TestsSourcePath }, TEST_REGEX).ToArray());
             }
             return true;
         }
         else
         {
             return false;
-        }
-    }
-
-    public object ExecuteProgramWithHTTPGet(string programName, string currentHTTPURIString)
-    {
-        return ExecuteProgram(programName, "http", "GET", currentHTTPURIString);
-    }
-
-    public object ExecuteProgram(string programName, params string[] args)
-    {
-        if (!File.Exists(Settings.Programs[programName].ProgramFilePath))
-        {
-            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program is not available!", 404));
-        }
-
-        var startInfo = new ProcessStartInfo();
-        startInfo.Arguments = String.Join(' ', args);
-        startInfo.CreateNoWindow = false;
-        startInfo.FileName = Settings.Programs[programName].ProgramFilePath;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        startInfo.UseShellExecute = false;
-        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-        try
-        {
-            IList<string> currentHTTPHeaders = new List<string>();
-            string currentHTTPBodyText = null;
-
-            using (Process program = Process.Start(startInfo))
-            {
-                using (var sr = program.StandardOutput)
-                {
-                    string line;
-                    while ((line = sr.ReadLine()) != null)
-                    {
-                        if (String.IsNullOrEmpty(line))
-                        {
-                            currentHTTPBodyText = "";
-                        }
-                        else if (currentHTTPBodyText == null)
-                        {
-                            currentHTTPHeaders.Add(line);
-                        }
-                        else
-                        {
-                            currentHTTPBodyText += line;
-                        }
-                    }
-                }
-                program.WaitForExit();
-            }
-
-            int currentHTTPStatus = int.Parse(new Regex("\\d\\d\\d").Match(currentHTTPHeaders.First()).Value);
-            return new JWAoCHTTPResponse(currentHTTPStatus, String.IsNullOrEmpty(currentHTTPBodyText) ? null : JsonSerializer.Deserialize<object>(currentHTTPBodyText));
-        }
-        catch(Exception ex)
-        {
-            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails(ex.Message, 422));
         }
     }
 
@@ -351,27 +308,101 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         );
     }
 
+    // load-methods
+    protected bool LoadSettrings(string exceptionPrefixText, bool printPrefix=false)
+    {
+        try
+        {
+            Settings = SettingsSerializer.LoadSettings();
+        }
+        catch (Exception ex)
+        {
+            if (printPrefix) PrintPrefixOut();
+            Print(
+                exceptionPrefixText,
+                $"load settings \"{SettingsSerializer.ConfigFilePath}\" caused by ",
+                (ex is IOException ? "IO related" : (ex is JsonException ? "JSON related" : "unknown")),
+                $" issues!{Environment.NewLine}"
+            );
+            return false;
+        }
+        if (!Settings.Init())
+        {
+            if (printPrefix) PrintPrefixOut();
+            Print($"{exceptionPrefixText}initalize settings!{Environment.NewLine}");
+            return false;
+        }
+        return true;
+    }
+
+    // store-methods
+    public void StoreResult(string tabs, DateTime timestamp, string taskName, TimeSpan duration, string programName, string programFilePath, string[] programArgs, IJWAoCHTTPResponse response)
+    {
+        if (!string.IsNullOrEmpty(Settings.SpecificResultTargetPath) && response.StatusCode == 200)
+        {
+            if (!File.Exists(Settings.ResultTargetPath) || File.ReadAllText(Settings.ResultTargetPath).Trim().Length == 0)
+            {
+                File.WriteAllText(Settings.ResultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
+            }
+
+            PrintPrefixOut();
+            Print($"{tabs}store result... ");
+            try
+            {
+                File.AppendAllText(Settings.ResultTargetPath, Environment.NewLine + string.Join(';', new string[] {
+                    timestamp.ToString("yyyy.MM.dd HH:mm:ss:fff"),
+                    taskName,
+                    response.StatusCode == 200 ? response.Content.ToString() : "null",
+                    duration.ToString(),
+                    programName,
+                    programFilePath,
+                    string.Join(" ", programArgs),
+                    response.ToString(true),
+                }));
+                Print($"was successful!{Environment.NewLine}");
+            }
+            catch
+            {
+                Print($"failed!{Environment.NewLine}");
+            }
+        }
+    }
+
     // get-methods
-    public IList<string> GetSourceFilePaths(string sourcePath, string suffix=".txt", string? currentDay=null, string? currentSub=null)
+    public IList<string> GetSourceFilePaths(string[] sourcePaths, Regex regex)
     {
         bool AllowedFilePath(string filePath)
         {
-            return (
-                    filePath.ToLower().EndsWith(TASK_SUFFIX) ||
-                    filePath.ToLower().EndsWith(INPUT_SUFFIX) ||
-                    filePath.ToLower().EndsWith(TEST_SUFFIX)
-                ) &&
-                filePath.ToLower().EndsWith(suffix) &&
-                (currentDay == null || filePath.ToLower().Contains(currentDay)) &&
-                (currentSub == null || filePath.ToLower().Contains(currentSub));
+            return regex.Match(filePath).Success ||
+                (CurrentYear == null || filePath.Contains(CurrentYear.ToString())) ||
+                (CurrentDay == null || filePath.Contains(CurrentDay.ToString())) ||
+                (CurrentSub == null || filePath.Contains(CurrentSub));
         }
-
-        return JWAoCFileService.GetSourceFilePaths(sourcePath, AllowedFilePath);
+        var x = IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths).Select(s => Tuple.Create(
+                regex.Match(s).Success,
+                CurrentYear == null || s.Contains(CurrentYear.ToString()),
+                CurrentDay == null || s.Contains(CurrentDay.ToString()),
+                CurrentSub == null || s.Contains(CurrentSub),
+                s
+            ))
+            .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
+            ;
+        return IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
+            .Select(s => Tuple.Create(
+                regex.Match(s).Success,
+                CurrentYear == null || s.Contains(CurrentYear.ToString()),
+                CurrentDay == null || s.Contains(CurrentDay.ToString()),
+                CurrentSub == null || s.Contains(CurrentSub),
+                s
+            ))
+            .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
+            .Select(e => e.Item5)
+            .ToList();
     }
 
     protected IJWAoCCommand GetCommandOfString(string source)
     {
-        if (String.IsNullOrEmpty(source)) return null;
+        if (string.IsNullOrEmpty(source)) return null;
 
         var trimmedSource = source.Trim();
         var simpleSource = source.ToLower();
@@ -420,7 +451,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         Console.Write(' ');
     }
 
-    private void PrintPrefixLevel()
+    protected void PrintPrefixLevel()
     {
         if (CurrentYear != null)
         {

@@ -1,4 +1,5 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Services;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace JWAdventOfCodeHandlerLibrary.Settings.Program;
@@ -13,19 +14,25 @@ public class JWAoCProgram
     [JsonPropertyName("src")]
     public string ProgramFilePath { get; set; }
 
+    // static-get-methods
+    public static string? GetHighestVersionOf(IList<string> versions)
+    {
+        return versions.Select(s => Tuple.Create(s, int.Parse(s[1..]))).OrderBy(v => v.Item2).LastOrDefault()?.Item1;
+    }
+
     // get-methods
-    public string GetVersion(IJWAoCProgramExecutionService programExecutionService)
+    public IList<string> GetVersions(IJWAoCProgramExecutionService programExecutionService)
     {
         var result = programExecutionService.CallProgramWithLocalHTTPGet(this, "/versions");
-        if(result.StatusCode != 200) return null;
+        if(result.StatusCode != 200) return new string[] { };
 
         try
         {
-            return ((IList<string>)result.Content).Select(s => Tuple.Create(s, int.Parse(s[1..]))).OrderBy(v => v.Item2).Last().Item1;
+            return JsonSerializer.Deserialize<List<string>>(result.Content.ToString());
         }
         catch
         {
-            return null;
+            return new string[] { };
         }
     }
 

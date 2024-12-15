@@ -18,7 +18,9 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
     public virtual string ResultsTargetPath { get; set; } = ".";
 
     [JsonPropertyName("result_trg")]
-    public virtual string ResultTargetPath { get; set; } = "results.csv";
+    public virtual string SpecificResultTargetPath { get; set; } = "results.csv";
+    [JsonIgnore]
+    public virtual string ResultTargetPath { get { return Path.Join(ResultsTargetPath, SpecificResultTargetPath); } }
 
     [JsonPropertyName("programs")]
     public Dictionary<string, JWAoCProgram> Programs { get; set; } = new Dictionary<string, JWAoCProgram>();

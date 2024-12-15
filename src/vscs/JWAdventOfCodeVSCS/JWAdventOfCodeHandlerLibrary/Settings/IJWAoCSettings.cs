@@ -12,7 +12,7 @@ public interface IJWAoCSettings
 
     public string ResultsTargetPath { get; set; }
 
-    public string ResultTargetPath { get; set; }
+    public string SpecificResultTargetPath { get; set; }
 
     public Dictionary<string, JWAoCProgram> Programs { get; set; }
 

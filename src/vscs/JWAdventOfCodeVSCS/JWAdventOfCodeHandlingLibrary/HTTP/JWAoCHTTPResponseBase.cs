@@ -13,7 +13,7 @@ public abstract class JWAoCHTTPResponseBase : IJWAoCHTTPResponse
 
     public virtual Dictionary<string, string> Headers { get; set; } = new Dictionary<string, string>();
 
-    public virtual object Content { get; set; }
+    public virtual object? Content { get; set; }
 
     // to-methods
     public string ToString(bool inline=false)

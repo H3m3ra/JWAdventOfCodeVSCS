@@ -2,5 +2,6 @@
 
 public enum JWAoCProgramType
 {
-    EXE = 0
+    EXE = 0,
+    RAW = 1
 }
