@@ -12,16 +12,18 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
     {
         if (!string.IsNullOrEmpty(settings.ResultTargetPath) && result.Response.StatusCode == 200)
         {
-            if (!File.Exists(settings.ResultTargetPath) || File.ReadAllText(settings.ResultTargetPath).Trim().Length == 0)
-            {
-                File.WriteAllText(settings.ResultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
-            }
-
-            consoleApplication.PrintPrefixOut();
-            consoleApplication.Print($"  store result... ");
             try
             {
-                File.AppendAllText(settings.ResultTargetPath, Environment.NewLine + string.Join(';', new string[] {
+                if (!File.Exists(settings.ResultTargetPath) || File.ReadAllText(settings.ResultTargetPath).Trim().Length == 0)
+                {
+                    File.WriteAllText(settings.ResultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
+                }
+
+                consoleApplication.PrintPrefixOut();
+                consoleApplication.Print($"  store result... ");
+                try
+                {
+                    File.AppendAllText(settings.ResultTargetPath, Environment.NewLine + string.Join(';', new string[] {
                     result.Timestamp.ToString("yyyy.MM.dd HH:mm:ss:fff"),
                     $"{result.TaskYear}-{result.TaskDay}{result.SubTask}",
                     result.Response.StatusCode == 200 ? result.Response.Content.ToString() : "null",
@@ -31,11 +33,16 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
                     string.Join(" ", result.ProgramArgs),
                     result.Response.ToString(true),
                 }));
-                consoleApplication.Print($"was successful!{Environment.NewLine}");
+                    consoleApplication.Print($"was successful!{Environment.NewLine}");
+                }
+                catch
+                {
+                    consoleApplication.Print($"failed!{Environment.NewLine}");
+                }
             }
-            catch
+            catch(Exception ex)
             {
-                consoleApplication.Print($"failed!{Environment.NewLine}");
+                consoleApplication.PrintLineOut($"  ERROR {ex.Message}");
             }
         }
     }
