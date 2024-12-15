@@ -1,9 +1,7 @@
 ﻿using JWAdventOfCodeHandlerLibrary;
 using JWAdventOfCodeHandlerLibrary.Command;
-using JWAdventOfCodeHandlerLibrary.Data;
 using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
-using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Commands.StringCommands;
 using System.Text.Json;
@@ -14,7 +12,7 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "1.0.0.20241203201300";
+    public const string PROGRAM_VERSION_FULL = "1.0.0.20241215221000";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public const string PROGRAM_VERSION = "v1.0";
     public const string PROGRAM_NAME_SHORT = "AoCVSCS";
@@ -34,6 +32,8 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public int? CurrentYear { get; set; } = null;
     public int? CurrentDay { get; set; } = null;
     public string? CurrentSub { get; set; } = null;
+
+    protected int printLevel = 0;
 
     public JWAoCHandlerVSCS()
     {
@@ -59,14 +59,33 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         {
             try
             {
-                foreach (var line in File.ReadLines(args[0]))
+                bool execute;
+                if (Interactive)
                 {
-                    ExecuteExternCommand(line);
+                    PrintPrefixIn();
+                    Print($"Execute file from path \"{args[1]}\"? (y/n) ");
+                    execute = GetLineIn().Trim().ToLower().StartsWith("y");
+                }
+                else
+                {
+                    PrintLineOut($"Execute file from path \"{args[1]}\".");
+                    execute = true;
+                }
+
+                if (execute)
+                {
+                    printLevel = 1;
+                    foreach (var line in File.ReadLines(args[1]))
+                    {
+                        ExecuteExternCommand(line);
+                    }
+                    printLevel = 0;
                 }
             }
-            catch
+            catch(Exception ex)
             {
-                Print($"Cannot execute file from path \"{args[1]}\"!{Environment.NewLine}");
+                printLevel = 0;
+                PrintLineOut($"Cannot execute file from path \"{args[1]}\"!");
             }
         }
         return true;
