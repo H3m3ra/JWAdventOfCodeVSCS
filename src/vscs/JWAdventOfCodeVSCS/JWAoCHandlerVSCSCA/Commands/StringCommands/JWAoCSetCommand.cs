@@ -83,7 +83,7 @@ public class JWAoCSetCommand : JWAoCStringCommandBase
         }
         else if (PropertyName == "results_trg")
         {
-            settings.ResultTargetPath = PropertyValue;
+            settings.SpecificResultTargetPath = PropertyValue;
         }
         else if (PropertyName == "tasks_src")
         {
