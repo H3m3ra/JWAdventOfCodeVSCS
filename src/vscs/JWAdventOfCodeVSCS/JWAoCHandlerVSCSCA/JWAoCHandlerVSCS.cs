@@ -15,7 +15,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public const string PROGRAM_VERSION_FULL = "1.0.0.20241215221000";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public const string PROGRAM_VERSION = "v1.0";
-    public const string PROGRAM_NAME_SHORT = "AoCVSCS";
+    public const string PROGRAM_NAME_SHORT = "AoC";
 
     public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
     public static readonly Regex INPUT_REGEX = new Regex("input", RegexOptions.IgnoreCase);
@@ -25,9 +25,10 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public const string INPUT_SUFFIX = "_input.txt";
     public const string TEST_SUFFIX = "_test.txt";
 
-    public IJWAoCIOService IOService { get; set; }
-    public IJWAoCProgramExecutionService ProgramExecutionService { get; set; }
-    public IJWAoCResultHandlerService ResultHandlerService { get; set; }
+    public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = null!;
+    public IJWAoCIOService IOService { get; set; } = null!;
+    public IJWAoCProgramExecutionService ProgramExecutionService { get; set; } = null!;
+    public IJWAoCResultHandlerService ResultHandlerService { get; set; } = null!;
 
     public int? CurrentYear { get; set; } = null;
     public int? CurrentDay { get; set; } = null;
@@ -100,7 +101,19 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     protected override bool ExecuteCommand(string source)
     {
         if (string.IsNullOrEmpty(source)) return true;
-        return ExecuteCommand(GetCommandOfString(source));
+
+        var trimmedSource = source.Trim();
+        var simpleSource = trimmedSource.ToLower();
+
+        foreach (var entry in CommandFactories)
+        {
+            if (simpleSource.StartsWith(entry.Key))
+            {
+                return ExecuteCommand(entry.Value.CreateCommandFromString(source));
+            }
+        }
+
+        return true;
     }
 
     public override bool ExecuteCommand(IJWAoCCommand command)
@@ -347,47 +360,13 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             .ToList();
     }
 
-    protected IJWAoCCommand GetCommandOfString(string source)
-    {
-        if (string.IsNullOrEmpty(source)) return null;
-
-        var trimmedSource = source.Trim();
-        var simpleSource = source.ToLower();
-
-        if (simpleSource.StartsWith("se")) return JWAoCSetCommand.ToSetCommandFromString(source);
-        if (simpleSource.StartsWith("?") || simpleSource.StartsWith("h")) 
-        {
-            
-        }
-        else if (simpleSource.StartsWith("ca")) return JWAoCCallCommand.ToCallCommandFromString(source);
-        else if (simpleSource.StartsWith("cr"))
-        {
-
-        }
-        else if (simpleSource.StartsWith("ch"))
-        {
-
-        }
-        else if (simpleSource.StartsWith("g")) return JWAoCGetCommand.ToGetCommandFromString(source);
-        else if (simpleSource.StartsWith("se")) return JWAoCSetCommand.ToSetCommandFromString(source);
-        else if (simpleSource.StartsWith("sh"))
-        {
-        
-        }
-        else if (simpleSource.StartsWith("y"))
-        {
-        
-        }
-        
-        return null;
-    }
-
     // print-methods
     public override void PrintPrefixIn()
     {
         Console.Write(PROGRAM_NAME_SHORT);
         PrintPrefixLevel();
         Console.Write("> ");
+        Console.Write(new string(' ', 2 * printLevel));
     }
 
     public override void PrintPrefixOut()
@@ -395,7 +374,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         Console.Write('<');
         Console.Write(PROGRAM_NAME_SHORT);
         PrintPrefixLevel();
-        Console.Write(' ');
+        Console.Write(new string(' ', 2 * printLevel + 1));
     }
 
     protected void PrintPrefixLevel()

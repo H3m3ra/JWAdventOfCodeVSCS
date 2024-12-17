@@ -7,46 +7,15 @@ namespace JWAoCHandlerVSCSCA.Commands.StringCommands;
 
 public class JWAoCGetCommand : JWAoCStringCommandBase
 {
-    public virtual string PropertyName { get; protected set; }
+    public virtual string PropertyName { get; set; }
 
-    public override string[] Args { get { return (PropertyName == null ? new string[] { } : new string[] { PropertyName }); } protected set { } }
+    public override string[] Args { get { return (PropertyName == null ? new string[] { } : new string[] { PropertyName }); } set { } }
 
-    public override string Description { get { return "Get a setting property."; } protected set { } }
+    public override string Description { get { return "Get a setting property."; } set { } }
 
     public JWAoCGetCommand()
     {
 
-    }
-
-    // static-to-methods
-    public static JWAoCGetCommand ToGetCommandFromString(string source)
-    {
-        string originalSource = source;
-
-        if (source.Trim().Length == 0) return null;
-
-        int nextIndex;
-
-        source = source.TrimStart();
-        nextIndex = (nextIndex = source.IndexOf(' ')) < 0 ? source.Length : nextIndex ;
-        var commandName = source.Substring(0, nextIndex);
-
-        source = source.Substring(nextIndex).TrimStart();
-        var propertyName = source.TrimEnd();
-        if (propertyName.StartsWith("i")) propertyName = "inputs_src";
-        else if (propertyName.StartsWith("p")) propertyName = "programs";
-        else if (propertyName.StartsWith("results")) propertyName = "results_trg";
-        else if (propertyName.StartsWith("result_")) propertyName = "result_trg";
-        else if (propertyName.StartsWith("ta")) propertyName = "tasks_src";
-        else if (propertyName.StartsWith("te")) propertyName = "tests_src";
-        else propertyName = null;
-
-        return new JWAoCGetCommand()
-        {
-            Name = "get",
-            PropertyName = propertyName,
-            Source = originalSource
-        };
     }
 
     // get-methods

@@ -110,6 +110,6 @@ public abstract class JWAoCCABase : IJWAoCCA
 
     public string GetLineIn()
     {
-        return null;
+        return Console.ReadLine();
     }
 }
