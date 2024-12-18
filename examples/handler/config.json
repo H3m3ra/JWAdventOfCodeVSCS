@@ -1,14 +1,50 @@
 {
-  "JWAdventOfCodeVSCSCA_1.0.0.20241203201300": {
-    "tasks_src": "downloads/JWAdventOfCode/tasks",
-    "inputs_src": "downloads/JWAdventOfCode/src",
-    "tests_src": "downloads/JWAdventOfCode/src",
-    "results_trg": "home",
-    "result_trg": "results.csv",
+  "JWAdventOfCodeVSCSCA_1.1.0.20241218123200": {
+    "task_type": "task",
+    "tasks_src": [
+      "\\JWAdventOfCode"
+    ],
+    "tasks_trg": "\\JWAdventOfCode\\%yyyy%\\%dd%%s%_%tttt%.txt",
+    "input_type": "input",
+    "inputs_src": [
+      "\\JWAdventOfCode"
+    ],
+    "inputs_trg": "\\JWAdventOfCode\\%yyyy%\\%dd%%s%_%tttt%.txt",
+    "test_type": "test",
+    "tests_src": [
+      "\\JWAdventOfCode"
+    ],
+    "tests_trg": "\\JWAdventOfCode\\%yyyy%\\%dd%%s%_%tttt%.txt",
+    "result_type": "result",
+    "results_trg": "\\JWAdventOfCode\\%tttt%s\\%yyyy%\\%a%.csv",
     "programs": {
-      "MyProg24": {
+      "CS2024": {
         "type": "exe",
-        "src": "solutions/2024/MyProgram2024.exe"
+        "src": "\\JWAdventOfCode\\build\\vscs\\solutions\\JWAoC2024VSCSCA\\JWAoC2024VSCSCA.exe",
+        "handler": null
+      },
+      "HS2024": {
+        "type": "raw",
+        "src": "\\JWAdventOfCode\\build\\hs\\solutions\\JWAoC2024HSCA\\JWAoC2024HSCA.exe",
+        "handler": null
+      },
+      "Java2024": {
+        "type": "raw",
+        "src": "\\JWAdventOfCode\\build\\java\\solutions\\JWAoC2024JavaCA\\JWAoC2024JavaCA.java",
+        "handler": {
+          "builder": null,
+          "interpreter": "java",
+          "compiler": "javac"
+        }
+      },
+      "Py2024": {
+        "type": "raw",
+        "src": "\\JWAdventOfCode\\build\\py\\solutions\\JWAoC2024PyCA\\JWAoC2024PyCA.py",
+        "handler": {
+          "builder": null,
+          "interpreter": "python",
+          "compiler": null
+        }
       }
     }
   }
