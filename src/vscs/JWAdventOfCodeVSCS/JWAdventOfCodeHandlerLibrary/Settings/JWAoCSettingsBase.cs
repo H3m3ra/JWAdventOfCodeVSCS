@@ -11,26 +11,26 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
     [JsonPropertyName("tasks_src")]
     public string[] TasksSourcePaths { get; set; } = new string[] { "." };
     [JsonPropertyName("tasks_trg")]
-    public string TasksTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%type%.txt";
+    public string TasksTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%tttt%.txt";
 
     [JsonPropertyName("input_type")]
     public string InputType { get; set; } = "input";
     [JsonPropertyName("inputs_src")]
     public string[] InputsSourcePaths { get; set; } = new string[] { "." };
     [JsonPropertyName("inputs_trg")]
-    public string InputsTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%type%.txt";
+    public string InputsTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%tttt%.txt";
 
     [JsonPropertyName("test_type")]
     public string TestType { get; set; } = "test";
     [JsonPropertyName("tests_src")]
     public string[] TestsSourcePaths { get; set; } = new string[] { "." };
     [JsonPropertyName("tests_trg")]
-    public string TestsTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%type%.txt";
+    public string TestsTargetPathPattern { get; set; } = @".\%yyyy%\%dd%%s%_%tttt%.txt";
 
     [JsonPropertyName("result_type")]
     public string ResultType { get; set; } = "result";
     [JsonPropertyName("results_trg")]
-    public string ResultsTargetPathPattern { get; set; } = @".\%type%s\%yyyy%\%a%.csv";
+    public string ResultsTargetPathPattern { get; set; } = @".\%tttt%s\%yyyy%\%a%.csv";
 
     [JsonPropertyName("programs")]
     public Dictionary<string, JWAoCProgram> Programs { get; set; } = new Dictionary<string, JWAoCProgram>();
@@ -48,6 +48,11 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
         var yy = (yyValue == null ? yyyy : yyValue.ToString());
         var d = taskDay.ToString();
         var dd = (taskDay < 0 ? "0" : "") + d;
+
+        type ??= "";
+        programName ??= "";
+        programVersion ??= "";
+        programAuthor ??= "";
 
         var result = targetPathPattern
             .Replace("%yy%", yy).Replace("%yyyy%", yyyy)
