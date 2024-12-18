@@ -17,6 +17,10 @@ public class JWAoCResult
 
     public string ProgramName { get; set; } = null!;
 
+    public string ProgramVersion { get; set; } = null!;
+
+    public string ProgramAuthor { get; set; } = null!;
+
     public JWAoCProgram Program { get; set; } = null!;
 
     public string[] ProgramArgs { get; set; } = null!;
