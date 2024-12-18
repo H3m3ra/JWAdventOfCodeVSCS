@@ -1,5 +1,6 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
 using JWAdventOfCodeHandlerLibrary.Services;
+using JWAdventOfCodeHandlingLibrary.Services;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 using System.Text.RegularExpressions;
 
@@ -86,14 +87,7 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
                             Handler.CurrentYear = value;
                             if (Handler.CurrentYear < 100)
                             {
-                                var currentFullYear = DateTime.Now.Year;
-                                var currentShortYear = currentFullYear % 100;
-                                currentFullYear -= currentShortYear;
-                                if (Handler.CurrentYear > currentShortYear)
-                                {
-                                    currentFullYear -= 100;
-                                }
-                                Handler.CurrentYear += currentFullYear;
+                                Handler.CurrentYear += JWAocDateService.ToFullYearFromShortYear((int)Handler.CurrentYear);
                             }
                         }
                     }
@@ -128,10 +122,10 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
             }
             else if (currentCommand.Name.StartsWith("cr"))
             {
-                var taskFilePath = Handler.GetSourceFilePaths(new string[] { Handler.Settings.TasksSourcePath }, new Regex("task", RegexOptions.IgnoreCase)).FirstOrDefault();
+                var taskFilePath = Handler.GetSourceFilePaths(Handler.Settings.TasksSourcePaths, Handler.Settings.TaskType).FirstOrDefault();
                 if (string.IsNullOrEmpty(taskFilePath))
                 {
-                    taskFilePath = $"{Handler.Settings.TasksSourcePath}{Path.DirectorySeparatorChar}{Handler.CurrentYear}{Path.DirectorySeparatorChar}{(Handler.CurrentDay < 10 ? "0" : "")}{Handler.CurrentDay}{Handler.CurrentSub}_task.txt";
+                    taskFilePath = Handler.Settings.GetTaskTargetPath((int)Handler.CurrentYear, (int)Handler.CurrentDay, Handler.CurrentSub, JWAoCHandlerVSCS.PROGRAM_NAME_FULL, JWAoCHandlerVSCS.PROGRAM_VERSION_FULL, JWAoCHandlerVSCS.PROGRAM_AUTHOR);
                 }
 
                 IList<string> lines = new List<string>();
@@ -145,9 +139,9 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
             }
             else if (currentCommand.Name.StartsWith("sh"))
             {
-                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TasksSourcePath }, JWAoCHandlerVSCS.TASK_REGEX).ToArray());
-                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).ToArray());
-                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TestsSourcePath }, JWAoCHandlerVSCS.TEST_REGEX).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(Handler.Settings.TasksSourcePaths, Handler.Settings.TaskType).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, Handler.Settings.InputType).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(Handler.Settings.TestsSourcePaths, Handler.Settings.TestType).ToArray());
             }
         }
         return true;

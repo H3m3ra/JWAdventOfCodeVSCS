@@ -43,10 +43,10 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
         {
             var program = settings.Programs[ProgramName];
 
-            var inputFilePath = handler.GetSourceFilePaths(new string[] { settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).FirstOrDefault();
+            var inputFilePath = handler.GetSourceFilePaths(settings.InputsSourcePaths, settings.InputType).FirstOrDefault();
             if (string.IsNullOrEmpty(inputFilePath))
             {
-                inputFilePath = handler.GetSourceFilePaths(new string[] { settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).FirstOrDefault();
+                inputFilePath = handler.GetSourceFilePaths(settings.InputsSourcePaths, settings.InputType).FirstOrDefault();
             }
 
             JWAoCProgram.GetHighestVersionOf(program.GetVersions(handler.ProgramExecutionService));
@@ -83,7 +83,7 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
                         Response = response
                     },
                     settings,
-                    handler
+                    handler.IOConsoleService
                 );
             }
             if (response.StatusCode == 200) handler.IOConsoleService.PrintLineOut($"{response.Content.ToString()}");

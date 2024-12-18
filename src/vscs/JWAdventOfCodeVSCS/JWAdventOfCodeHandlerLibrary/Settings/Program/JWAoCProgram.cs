@@ -14,6 +14,10 @@ public class JWAoCProgram
     [JsonPropertyName("src")]
     public string ProgramFilePath { get; set; }
 
+    [JsonPropertyName("handler")]
+
+    public JWAoCProgramHandler? ProgramHandler { get; set; } = null;
+
     // static-get-methods
     public static string? GetHighestVersionOf(IList<string> versions)
     {

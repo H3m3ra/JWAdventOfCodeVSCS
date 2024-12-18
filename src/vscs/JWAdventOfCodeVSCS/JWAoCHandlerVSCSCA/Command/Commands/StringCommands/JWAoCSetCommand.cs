@@ -18,7 +18,7 @@ public class JWAoCSetCommand : JWAoCStringCommandBase
     // set-methods
     public JWAoCVSCSSettings SetValues(JWAoCVSCSSettings settings)
     {
-        if (PropertyName == "inputs_src")
+        /*if (PropertyName == "inputs_src")
         {
             settings.InputsSourcePath = PropertyValue;
         }
@@ -37,7 +37,7 @@ public class JWAoCSetCommand : JWAoCStringCommandBase
         else if (PropertyName == "tests_src")
         {
             settings.TestsSourcePath = PropertyValue;
-        }
+        }*/
         return settings;
     }
 }

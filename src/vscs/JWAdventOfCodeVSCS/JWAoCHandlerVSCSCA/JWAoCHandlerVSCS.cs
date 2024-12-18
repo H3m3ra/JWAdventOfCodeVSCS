@@ -10,10 +10,10 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "1.0.0.20241215221000";
+    public const string PROGRAM_VERSION_FULL = "1.1.0.20241218123200";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public const string PROGRAM_VERSION = "v1.0";
-    public const string PROGRAM_NAME_SHORT = "AoC";
+    public const string PROGRAM_AUTHOR = "JW-Hemera";
 
     public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
     public static readonly Regex INPUT_REGEX = new Regex("input", RegexOptions.IgnoreCase);
@@ -226,18 +226,18 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     }
 
     // get-methods
-    public IList<string> GetSourceFilePaths(string[] sourcePaths, Regex regex)
+    public IList<string> GetSourceFilePaths(string[] sourcePaths, string type)
     {
         bool AllowedFilePath(string filePath)
         {
-            return regex.Match(filePath).Success ||
+            return new Regex(type, RegexOptions.IgnoreCase).Match(filePath).Success ||
                 (CurrentYear == null || new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
                 (CurrentDay == null || new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
                 (CurrentSub == null || new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(filePath).Success);
         }
         return IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
             .Select(s => Tuple.Create(
-                regex.Match(s).Success,
+                new Regex(type, RegexOptions.IgnoreCase).Match(s).Success,
                 (CurrentYear != null && new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(s).Success),
                 (CurrentDay != null && new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(s).Success),
                 (CurrentSub != null && new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(s).Success),
