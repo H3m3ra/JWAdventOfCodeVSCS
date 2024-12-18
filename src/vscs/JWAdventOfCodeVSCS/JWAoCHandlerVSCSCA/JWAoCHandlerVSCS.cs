@@ -3,7 +3,7 @@ using JWAdventOfCodeHandlerLibrary.Command;
 using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlingLibrary.HTTP;
-using JWAoCHandlerVSCSCA.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -25,7 +25,8 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public const string INPUT_SUFFIX = "_input.txt";
     public const string TEST_SUFFIX = "_test.txt";
 
-    public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = null!;
+    public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = new Dictionary<string, IJWAoCStringCommandFactory>();
+    public IList<IJWAoCCommandHandlerService> CommandHandlers { get; set; } = new List<IJWAoCCommandHandlerService>();
     public IJWAoCIOService IOService { get; set; } = null!;
     public IJWAoCProgramExecutionService ProgramExecutionService { get; set; } = null!;
     public IJWAoCResultHandlerService ResultHandlerService { get; set; } = null!;
@@ -118,146 +119,22 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
     public override bool ExecuteCommand(IJWAoCCommand command)
     {
-        if (command == null) return true;
+        var handlers = CommandHandlers.Where(h => h.CanHandle(command)).ToList();
 
-        if (command is JWAoCCallCommand)
+        if(handlers.Count == 0)
         {
-            CurrentYear = 2024;
-            CurrentDay = 4;
-            CurrentSub = "a";
-            return ((JWAoCCallCommand)command).Execute(Settings, this);
-        }
-        else if (command is JWAoCGetCommand)
-        {
-            var currentCommand = (JWAoCGetCommand)command;
-            if(LoadSettrings("  Cannot ", true))
-            {
-                PrintLinesOut(currentCommand.GetValues(Settings, ProgramExecutionService).ToArray());
-            }
+            PrintLineOut($"  Cannot handle command \"{command.GetType().Name}\"!");
             return true;
         }
-        else if(command is JWAoCSetCommand)
-        {
-            var currentCommand = (JWAoCSetCommand)command;
-            Settings = currentCommand.SetValues(SettingsSerializer.LoadSettings());
-            SettingsSerializer.StoreSettings(Settings);
-            return true;
-        }
-        else if (command is JWAoCSimpleStringCommand)
-        {
-            var currentCommand = (JWAoCSimpleStringCommand)command;
 
-            if (currentCommand.Name.StartsWith("?") || currentCommand.Name.StartsWith("h"))
-            {
-                Help();
-            }
-            else if (currentCommand.Name.StartsWith("ch") || currentCommand.Name.StartsWith("y"))
-            {
-                var parts = currentCommand.Args;
-                if (parts.Length == 0)
-                {
-                    if (CurrentYear != null)
-                    {
-                        if (CurrentDay != null)
-                        {
-                            if (CurrentSub != null)
-                            {
-                                CurrentSub = null;
-                            }
-                            else
-                            {
-                                CurrentDay = null;
-                            }
-                        }
-                        else
-                        {
-                            CurrentYear = null;
-                        }
-                    }
-                }
-                else
-                {
-                    try
-                    {
-                        var value = int.Parse(parts[0]);
-                        if (CurrentYear != null && (value >= 1 && value <= 31))
-                        {
-                            CurrentDay = value;
-                        }
-                        else
-                        {
-                            CurrentYear = value;
-                            if (CurrentYear < 100)
-                            {
-                                var currentFullYear = DateTime.Now.Year;
-                                var currentShortYear = currentFullYear % 100;
-                                currentFullYear -= currentShortYear;
-                                if (CurrentYear > currentShortYear)
-                                {
-                                    currentFullYear -= 100;
-                                }
-                                CurrentYear += currentFullYear;
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        if (CurrentYear != null)
-                        {
-                            var value = parts[0].Trim();
-                            string currentSub = "";
-                            if (value.Length >= 2 && Char.IsDigit(value[1]))
-                            {
-                                CurrentDay = int.Parse(value.Substring(0, 2));
-                                currentSub = value.Substring(2).Trim();
-                            }
-                            else if (Char.IsDigit(value[0]))
-                            {
-                                CurrentDay = int.Parse(value.Substring(0, 1));
-                                currentSub = value.Substring(1).Trim();
-                            }
-                            else
-                            {
-                                currentSub = value;
-                            }
-
-                            if (CurrentDay != null)
-                            {
-                                CurrentSub = (currentSub.Length == 0 ? null : currentSub);
-                            }
-                        }
-                    }
-                }
-            }
-            else if (currentCommand.Name.StartsWith("cr"))
-            {
-                var taskFilePath = GetSourceFilePaths(new string[] { Settings.TasksSourcePath }, new Regex("task", RegexOptions.IgnoreCase)).FirstOrDefault();
-                if (string.IsNullOrEmpty(taskFilePath))
-                {
-                    taskFilePath = $"{Settings.TasksSourcePath}{Path.DirectorySeparatorChar}{CurrentYear}{Path.DirectorySeparatorChar}{(CurrentDay < 10 ? "0" : "")}{CurrentDay}{CurrentSub}_task.txt";
-                }
-
-                IList<string> lines = new List<string>();
-                string line = null;
-                while ((line = Console.ReadLine()).Length > 0 || lines.Count < 1 || lines.Last().Length > 0)
-                {
-                    lines.Add(line);
-                }
-                lines.RemoveAt(lines.Count - 1);
-                File.WriteAllText(taskFilePath, string.Join(Environment.NewLine, lines));
-            }
-            else if (currentCommand.Name.StartsWith("sh"))
-            {
-                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.TasksSourcePath }, TASK_REGEX).ToArray());
-                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.InputsSourcePath }, INPUT_REGEX).ToArray());
-                PrintLinesOut(GetSourceFilePaths(new string[] { Settings.TestsSourcePath }, TEST_REGEX).ToArray());
-            }
-            return true;
-        }
-        else
+        foreach (var handler in handlers)
         {
-            return false;
+            if (!handler.HandleCommand(command))
+            {
+                return false;
+            }
         }
+        return true;
     }
 
     public void Help()
@@ -305,6 +182,26 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     }
 
     // store-methods
+    public bool StoreSettings(string exceptionPrefixText, bool printPrefix = false)
+    {
+        try
+        {
+            SettingsSerializer.StoreSettings(Settings);
+        }
+        catch (Exception ex)
+        {
+            if (printPrefix) PrintPrefixOut();
+            Print(
+                exceptionPrefixText,
+                $"store settings \"{SettingsSerializer.ConfigFilePath}\" caused by ",
+                (ex is IOException ? "IO related" : "unknown"),
+                $" issues!{Environment.NewLine}"
+            );
+            return false;
+        }
+        return true;
+    }
+
     public void StoreResult(string tabs, DateTime timestamp, string taskName, TimeSpan duration, string programName, string programFilePath, string[] programArgs, IJWAoCHTTPResponse response)
     {
         if (!string.IsNullOrEmpty(Settings.SpecificResultTargetPath) && response.StatusCode == 200)

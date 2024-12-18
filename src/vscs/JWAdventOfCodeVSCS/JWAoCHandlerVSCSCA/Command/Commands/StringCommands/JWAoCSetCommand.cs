@@ -1,6 +1,4 @@
-﻿using JWAdventOfCodeHandlerLibrary.Command;
-
-namespace JWAoCHandlerVSCSCA.Commands.StringCommands;
+﻿namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
 public class JWAoCSetCommand : JWAoCStringCommandBase
 {

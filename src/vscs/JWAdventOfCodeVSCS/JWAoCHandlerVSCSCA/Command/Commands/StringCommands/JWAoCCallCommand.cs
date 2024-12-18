@@ -1,11 +1,10 @@
-﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAdventOfCodeHandlerLibrary.Data;
+﻿using JWAdventOfCodeHandlerLibrary.Data;
 using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAdventOfCodeHandlingLibrary.Services;
 
-namespace JWAoCHandlerVSCSCA.Commands.StringCommands;
+namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
 public class JWAoCCallCommand : JWAoCStringCommandBase
 {
@@ -17,7 +16,7 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
     {
         get
         {
-            var args = new string[1+2*ProgramArgs.Count];
+            var args = new string[1 + 2 * ProgramArgs.Count];
             args[0] = ProgramName;
             var index = 1;
             foreach (var entry in ProgramArgs)
@@ -102,7 +101,7 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
                 "GET",
                 $"/{version}/{year}/{(day < 10 ? "0" : "")}{day}/{JWAoCHTTPService.ToURIStringFromString(sub)}?"+
                 $"input={JWAoCHTTPService.ToURIStringFromString(inputFilePath)}"+
-                (ProgramArgs.Count == 0 ? "" : $"&{String.Join('&', ProgramArgs.ToArray().Select(e => JWAoCHTTPService.ToURIStringFromString(e.Key)+"="+JWAoCHTTPService.ToURIStringFromString(e.Value)))}")
+                (ProgramArgs.Count == 0 ? "" : $"&{string.Join('&', ProgramArgs.ToArray().Select(e => JWAoCHTTPService.ToURIStringFromString(e.Key)+"="+JWAoCHTTPService.ToURIStringFromString(e.Value)))}")
             };
     }
 }

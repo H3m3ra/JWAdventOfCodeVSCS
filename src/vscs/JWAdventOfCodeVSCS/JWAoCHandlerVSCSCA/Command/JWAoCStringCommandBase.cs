@@ -1,4 +1,6 @@
-﻿namespace JWAdventOfCodeHandlerLibrary.Command;
+﻿using JWAdventOfCodeHandlerLibrary.Command;
+
+namespace JWAoCHandlerVSCSCA.Command;
 
 public abstract class JWAoCStringCommandBase : IJWAoCStringCommand
 {

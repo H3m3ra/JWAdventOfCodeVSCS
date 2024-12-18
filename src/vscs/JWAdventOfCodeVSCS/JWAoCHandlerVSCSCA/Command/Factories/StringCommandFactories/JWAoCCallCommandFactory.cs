@@ -1,8 +1,8 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAoCHandlerVSCSCA.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 using System.Text.RegularExpressions;
 
-namespace JWAoCHandlerVSCSCA.Commands.StringCommandFactories;
+namespace JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
 
 public class JWAoCCallCommandFactory : IJWAoCStringCommandFactory
 {
@@ -28,7 +28,7 @@ public class JWAoCCallCommandFactory : IJWAoCStringCommandFactory
             args[a] = args[a].ToLower();
             if (args[a] == "args")
             {
-                programArgs.Add("args", String.Join(' ', args.Where((arg, i) => i > a).ToArray()));
+                programArgs.Add("args", string.Join(' ', args.Where((arg, i) => i > a).ToArray()));
                 break;
             }
             else

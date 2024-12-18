@@ -1,7 +1,7 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAoCHandlerVSCSCA.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
-namespace JWAoCHandlerVSCSCA.Commands.StringCommandFactories;
+namespace JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
 
 public class JWAoCSetCommandFactory : IJWAoCStringCommandFactory
 {

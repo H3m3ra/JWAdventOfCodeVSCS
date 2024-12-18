@@ -1,35 +1,46 @@
-﻿using JWAdventOfCodeHandlerLibrary.Command;
+﻿using JWAdventOfCodeHandlerLibrary;
+using JWAdventOfCodeHandlerLibrary.Command;
 using JWAoCHandlerVSCSCA;
-using JWAoCHandlerVSCSCA.Commands.StringCommandFactories;
+using JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
 using JWAoCHandlerVSCSCA.Services;
+using JWAoCHandlerVSCSCA.Services.CommandHandlers;
+
+static IJWAoCCA Build()
+{
+    var currentAoCVSCS = new JWAoCHandlerVSCS()
+    {
+        CommandFactories = new Dictionary<string, IJWAoCStringCommandFactory>()
+        {
+            //{ "?", null},
+            //{ "a", null},
+            { "c", new JWAoCCallCommandFactory()},
+            { "g", new JWAoCGetCommandFactory()},
+            //{ "h", null},
+            { "s", new JWAoCSetCommandFactory()},
+            //{ "sh", null}
+        },
+        IOService = new JWAoCIOService(),
+        ProgramExecutionService = new JWAoCProgramExecutionService(),
+        ResultHandlerService = new JWAoCResultCSVHandlerServices()
+    };
+    currentAoCVSCS.CommandHandlers.Add(new JWAoCCurrentCommandHandler() { Handler = currentAoCVSCS });
+    return currentAoCVSCS;
+}
+
 
 var interactive = false;
 
-using (var currentAoCVSCS = new JWAoCHandlerVSCS() {
-    CommandFactories = new Dictionary<string, IJWAoCStringCommandFactory>()
-    {
-        //{ "?", null},
-        //{ "a", null},
-        { "c", new JWAoCCallCommandFactory()},
-        { "g", new JWAoCGetCommandFactory()},
-        //{ "h", null},
-        { "s", new JWAoCSetCommandFactory()},
-        //{ "sh", null}
-    },
-    IOService = new JWAoCIOService(),
-    ProgramExecutionService = new JWAoCProgramExecutionService(),
-    ResultHandlerService = new JWAoCResultCSVHandlerServices()
-})
+using (var currentCA = Build())
 {
-    if (currentAoCVSCS.Init(args))
+    if (currentCA.Init(args))
     {
-        if (currentAoCVSCS.Interactive)
+        if (currentCA.Interactive)
         {
-            while (currentAoCVSCS.ExecuteConsoleCommand()) { }
+            while (currentCA.ExecuteConsoleCommand()) { }
         }
     }
 
-    interactive = currentAoCVSCS.Interactive;
+    interactive = currentCA.Interactive;
 }
 
 if (interactive)

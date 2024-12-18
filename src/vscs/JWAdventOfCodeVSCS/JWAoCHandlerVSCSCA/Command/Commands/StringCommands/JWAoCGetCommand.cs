@@ -1,15 +1,14 @@
-﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAdventOfCodeHandlerLibrary.Services;
+﻿using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 
-namespace JWAoCHandlerVSCSCA.Commands.StringCommands;
+namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
 public class JWAoCGetCommand : JWAoCStringCommandBase
 {
     public virtual string PropertyName { get; set; }
 
-    public override string[] Args { get { return (PropertyName == null ? new string[] { } : new string[] { PropertyName }); } set { } }
+    public override string[] Args { get { return PropertyName == null ? new string[] { } : new string[] { PropertyName }; } set { } }
 
     public override string Description { get { return "Get a setting property."; } set { } }
 
