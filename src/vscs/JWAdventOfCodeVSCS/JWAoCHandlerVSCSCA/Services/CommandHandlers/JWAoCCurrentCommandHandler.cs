@@ -26,7 +26,7 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
             var currentCommand = (JWAoCGetCommand)command;
             if (Handler.LoadSettrings("  Cannot ", true))
             {
-                Handler.PrintLinesOut(currentCommand.GetValues(Handler.Settings, Handler.ProgramExecutionService).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(currentCommand.GetValues(Handler.Settings, Handler.ProgramExecutionService).ToArray());
             }
         }
         else if (command is JWAoCSetCommand)
@@ -145,9 +145,9 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
             }
             else if (currentCommand.Name.StartsWith("sh"))
             {
-                Handler.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TasksSourcePath }, JWAoCHandlerVSCS.TASK_REGEX).ToArray());
-                Handler.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).ToArray());
-                Handler.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TestsSourcePath }, JWAoCHandlerVSCS.TEST_REGEX).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TasksSourcePath }, JWAoCHandlerVSCS.TASK_REGEX).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.InputsSourcePath }, JWAoCHandlerVSCS.INPUT_REGEX).ToArray());
+                Handler.IOConsoleService.PrintLinesOut(Handler.GetSourceFilePaths(new string[] { Handler.Settings.TestsSourcePath }, JWAoCHandlerVSCS.TEST_REGEX).ToArray());
             }
         }
         return true;

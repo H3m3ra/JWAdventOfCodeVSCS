@@ -2,8 +2,6 @@
 using JWAdventOfCodeHandlerLibrary.Command;
 using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
-using JWAdventOfCodeHandlingLibrary.HTTP;
-using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 
@@ -27,15 +25,13 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
     public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = new Dictionary<string, IJWAoCStringCommandFactory>();
     public IList<IJWAoCCommandHandlerService> CommandHandlers { get; set; } = new List<IJWAoCCommandHandlerService>();
-    public IJWAoCIOService IOService { get; set; } = null!;
-    public IJWAoCProgramExecutionService ProgramExecutionService { get; set; } = null!;
-    public IJWAoCResultHandlerService ResultHandlerService { get; set; } = null!;
 
-    public int? CurrentYear { get; set; } = null;
-    public int? CurrentDay { get; set; } = null;
-    public string? CurrentSub { get; set; } = null;
-
-    protected int printLevel = 0;
+    public int? CurrentYear { get { return currentYear; } set { currentYear = value; UpdateCurrentPath(); } }
+    protected int? currentYear = null;
+    public int? CurrentDay { get { return currentDay; } set { currentDay = value; UpdateCurrentPath(); } }
+    protected int? currentDay = null;
+    public string? CurrentSub { get { return currentSub; } set { currentSub = value; UpdateCurrentPath(); } }
+    protected string? currentSub = null;
 
     public JWAoCHandlerVSCS()
     {
@@ -53,9 +49,9 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         Silent = options.Contains("-s");
         Interactive = options.Contains("-i");
 
-        Print($"{PROGRAM_NAME} {PROGRAM_VERSION} starting...");
+        IOConsoleService.Print($"{PROGRAM_NAME} {PROGRAM_VERSION} starting...");
         if (!LoadSettrings(" cannot ")) return false;
-        Print($"{Environment.NewLine}");
+        IOConsoleService.Print($"{Environment.NewLine}");
 
         if (options.Contains("-f") && args.Length >= 2)
         {
@@ -64,30 +60,30 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                 bool execute;
                 if (Interactive)
                 {
-                    PrintPrefixIn();
-                    Print($"Execute file from path \"{args[1]}\"? (y/n) ");
-                    execute = GetLineIn().Trim().ToLower().StartsWith("y");
+                    IOConsoleService.PrintPrefixIn();
+                    IOConsoleService.Print($"Execute file from path \"{args[1]}\"? (y/n) ");
+                    execute = IOConsoleService.GetLineIn().Trim().ToLower().StartsWith("y");
                 }
                 else
                 {
-                    PrintLineOut($"Execute file from path \"{args[1]}\".");
+                    IOConsoleService.PrintLineOut($"Execute file from path \"{args[1]}\".");
                     execute = true;
                 }
 
                 if (execute)
                 {
-                    printLevel = 1;
+                    IOConsoleService.IndentationLevel = 1;
                     foreach (var line in File.ReadLines(args[1]))
                     {
                         ExecuteExternCommand(line);
                     }
-                    printLevel = 0;
+                    IOConsoleService.IndentationLevel = 0;
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
-                printLevel = 0;
-                PrintLineOut($"Cannot execute file from path \"{args[1]}\"!");
+                IOConsoleService.IndentationLevel = 0;
+                IOConsoleService.PrintLineOut($"Cannot execute file from path \"{args[1]}\"!");
             }
         }
         return true;
@@ -95,7 +91,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
     public override void Dispose()
     {
-        Print($"...{PROGRAM_NAME} finished.{Environment.NewLine}");
+        IOConsoleService.Print($"...{PROGRAM_NAME} finished.{Environment.NewLine}");
     }
 
     // methods
@@ -121,9 +117,9 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     {
         var handlers = CommandHandlers.Where(h => h.CanHandle(command)).ToList();
 
-        if(handlers.Count == 0)
+        if (handlers.Count == 0)
         {
-            PrintLineOut($"  Cannot handle command \"{command.GetType().Name}\"!");
+            IOConsoleService.PrintLineOut($"  Cannot handle command \"{command.GetType().Name}\"!");
             return true;
         }
 
@@ -139,7 +135,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 
     public void Help()
     {
-        PrintLinesOut(
+        IOConsoleService.PrintLinesOut(
             "**** JWAoCVSCS-Help *****************************************",
             "  ?              Show help.                                  ",
             "  call    n      Call a program.                             ",
@@ -154,8 +150,35 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         );
     }
 
+    // update-methods
+    protected void UpdateCurrentPath()
+    {
+        if (CurrentYear == null)
+        {
+            IOConsoleService.CurrentPath = "";
+        }
+        else
+        {
+            if (CurrentDay == null)
+            {
+                IOConsoleService.CurrentPath = $":{CurrentYear}";
+            }
+            else
+            {
+                if (CurrentSub == null)
+                {
+                    IOConsoleService.CurrentPath = $":{CurrentYear}/{CurrentDay}";
+                }
+                else
+                {
+                    IOConsoleService.CurrentPath = $":{CurrentYear}/{CurrentDay}/{CurrentSub}";
+                }
+            }
+        }
+    }
+
     // load-methods
-    public bool LoadSettrings(string exceptionPrefixText, bool printPrefix=false)
+    public bool LoadSettrings(string exceptionPrefixText, bool printPrefix = false)
     {
         try
         {
@@ -163,8 +186,8 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         }
         catch (Exception ex)
         {
-            if (printPrefix) PrintPrefixOut();
-            Print(
+            if (printPrefix) IOConsoleService.PrintPrefixOut();
+            IOConsoleService.Print(
                 exceptionPrefixText,
                 $"load settings \"{SettingsSerializer.ConfigFilePath}\" caused by ",
                 (ex is IOException ? "IO related" : (ex is JsonException ? "JSON related" : "unknown")),
@@ -174,8 +197,8 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         }
         if (!Settings.Init())
         {
-            if (printPrefix) PrintPrefixOut();
-            Print($"{exceptionPrefixText}initalize settings!{Environment.NewLine}");
+            if (printPrefix) IOConsoleService.PrintPrefixOut();
+            IOConsoleService.Print($"{exceptionPrefixText}initalize settings!{Environment.NewLine}");
             return false;
         }
         return true;
@@ -190,8 +213,8 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         }
         catch (Exception ex)
         {
-            if (printPrefix) PrintPrefixOut();
-            Print(
+            if (printPrefix) IOConsoleService.PrintPrefixOut();
+            IOConsoleService.Print(
                 exceptionPrefixText,
                 $"store settings \"{SettingsSerializer.ConfigFilePath}\" caused by ",
                 (ex is IOException ? "IO related" : "unknown"),
@@ -200,38 +223,6 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             return false;
         }
         return true;
-    }
-
-    public void StoreResult(string tabs, DateTime timestamp, string taskName, TimeSpan duration, string programName, string programFilePath, string[] programArgs, IJWAoCHTTPResponse response)
-    {
-        if (!string.IsNullOrEmpty(Settings.SpecificResultTargetPath) && response.StatusCode == 200)
-        {
-            if (!File.Exists(Settings.ResultTargetPath) || File.ReadAllText(Settings.ResultTargetPath).Trim().Length == 0)
-            {
-                File.WriteAllText(Settings.ResultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
-            }
-
-            PrintPrefixOut();
-            Print($"{tabs}store result... ");
-            try
-            {
-                File.AppendAllText(Settings.ResultTargetPath, Environment.NewLine + string.Join(';', new string[] {
-                    timestamp.ToString("yyyy.MM.dd HH:mm:ss:fff"),
-                    taskName,
-                    response.StatusCode == 200 ? response.Content.ToString() : "null",
-                    duration.ToString(),
-                    programName,
-                    programFilePath,
-                    string.Join(" ", programArgs),
-                    response.ToString(true),
-                }));
-                Print($"was successful!{Environment.NewLine}");
-            }
-            catch
-            {
-                Print($"failed!{Environment.NewLine}");
-            }
-        }
     }
 
     // get-methods
@@ -255,45 +246,5 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
             .Select(e => e.Item5)
             .ToList();
-    }
-
-    // print-methods
-    public override void PrintPrefixIn()
-    {
-        Console.Write(PROGRAM_NAME_SHORT);
-        PrintPrefixLevel();
-        Console.Write("> ");
-        Console.Write(new string(' ', 2 * printLevel));
-    }
-
-    public override void PrintPrefixOut()
-    {
-        Console.Write('<');
-        Console.Write(PROGRAM_NAME_SHORT);
-        PrintPrefixLevel();
-        Console.Write(new string(' ', 2 * printLevel + 1));
-    }
-
-    protected void PrintPrefixLevel()
-    {
-        if (CurrentYear != null)
-        {
-            Console.Write(':');
-            Console.Write(CurrentYear);
-            if (CurrentDay != null)
-            {
-                Console.Write('/');
-                if (CurrentDay < 10)
-                {
-                    Console.Write('0');
-                }
-                Console.Write(CurrentDay);
-                if (CurrentSub != null)
-                {
-                    Console.Write('/');
-                    Console.Write(CurrentSub);
-                }
-            }
-        }
     }
 }

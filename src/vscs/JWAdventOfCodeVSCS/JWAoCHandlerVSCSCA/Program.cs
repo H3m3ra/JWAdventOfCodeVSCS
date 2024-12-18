@@ -20,6 +20,7 @@ static IJWAoCCA Build()
             //{ "sh", null}
         },
         IOService = new JWAoCIOService(),
+        IOConsoleService = new JWAoCIOConsoleService() { ProgramName = "JWAoC" },
         ProgramExecutionService = new JWAoCProgramExecutionService(),
         ResultHandlerService = new JWAoCResultCSVHandlerServices()
     };

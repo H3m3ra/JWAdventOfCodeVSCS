@@ -62,13 +62,13 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
             else
             {
                 var args = GetSolveCallArgs(version, (int)handler.CurrentYear, (int)handler.CurrentDay, handler.CurrentSub, inputFilePath);
-                handler.PrintLineOut($"  \"{ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+                handler.IOConsoleService.PrintLineOut($"  \"{ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
 
                 start = DateTime.Now;
                 response = handler.ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
                 var duration = DateTime.Now - start - referenceDuration;
 
-                handler.PrintLineOut($"  ...\"{ProgramName}\" finished. ({duration})");
+                handler.IOConsoleService.PrintLineOut($"  ...\"{ProgramName}\" finished. ({duration})");
                 handler.ResultHandlerService.HandleResult(
                     new JWAoCResult()
                     {
@@ -86,8 +86,8 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
                     handler
                 );
             }
-            if (response.StatusCode == 200) handler.PrintLineOut($"{response.Content.ToString()}");
-            else handler.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+            if (response.StatusCode == 200) handler.IOConsoleService.PrintLineOut($"{response.Content.ToString()}");
+            else handler.IOConsoleService.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
         }
         return true;
     }

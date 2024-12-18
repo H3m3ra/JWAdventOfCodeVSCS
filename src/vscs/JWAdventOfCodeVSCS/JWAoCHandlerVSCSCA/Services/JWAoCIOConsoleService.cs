@@ -1,34 +1,20 @@
-﻿using JWAdventOfCodeHandlerLibrary.Command;
+﻿using JWAdventOfCodeHandlerLibrary.Services;
 
-namespace JWAdventOfCodeHandlerLibrary;
+namespace JWAoCHandlerVSCSCA.Services;
 
-public abstract class JWAoCCABase : IJWAoCCA
+public class JWAoCIOConsoleService : IJWAoCIOConsoleService
 {
-    public bool Interactive { get; set; } = true;
+    public string ProgramName { get; set; } = null!;
+    public int IndentationLevel { get; set; } = 0;
 
     public bool Silent { get; set; } = false;
 
-    // init-methods
-    public abstract bool Init(params string[] args);
+    public string CurrentPath { get; set; } = "";
 
-    public abstract void Dispose();
-
-    // execute-methods
-    public bool ExecuteExternCommand(string source)
+    public JWAoCIOConsoleService()
     {
-        PrintLineIn(source);
-        return ExecuteCommand(source);
+
     }
-
-    public bool ExecuteConsoleCommand()
-    {
-        PrintPrefixIn();
-        return ExecuteCommand(Console.ReadLine());
-    }
-
-    protected abstract bool ExecuteCommand(string source);
-
-    public abstract bool ExecuteCommand(IJWAoCCommand command);
 
     // print-methods
     public void PrintLinesIn(params string[] lines)
@@ -75,9 +61,22 @@ public abstract class JWAoCCABase : IJWAoCCA
         }
     }
 
-    public abstract void PrintPrefixIn();
 
-    public abstract void PrintPrefixOut();
+    public void PrintPrefixIn()
+    {
+        Console.Write(ProgramName);
+        Console.Write(CurrentPath);
+        Console.Write("> ");
+        Console.Write(new string(' ', 2 * IndentationLevel));
+    }
+
+    public void PrintPrefixOut()
+    {
+        Console.Write('<');
+        Console.Write(ProgramName);
+        Console.Write(CurrentPath);
+        Console.Write(new string(' ', 2 * IndentationLevel + 1));
+    }
 
     public void Print(params string[] parts)
     {

@@ -1,11 +1,16 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
+using JWAdventOfCodeHandlerLibrary.Services;
 
 namespace JWAdventOfCodeHandlerLibrary;
 
-public interface IJWAoCCA : IJWAoCConsolePrinter, IDisposable
+public interface IJWAoCCA : IDisposable
 {
-    public bool Interactive { get; set; }
+    public IJWAoCIOService IOService { get; set; }
+    public IJWAoCIOConsoleService IOConsoleService { get; set; }
+    public IJWAoCProgramExecutionService ProgramExecutionService { get; set; }
+    public IJWAoCResultHandlerService ResultHandlerService { get; set; }
 
+    public bool Interactive { get; set; }
     public bool Silent { get; set; }
 
     // init-methods

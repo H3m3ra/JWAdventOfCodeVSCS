@@ -1,7 +1,11 @@
-﻿namespace JWAdventOfCodeHandlerLibrary;
+﻿namespace JWAdventOfCodeHandlerLibrary.Services;
 
-public interface IJWAoCConsolePrinter
+public interface IJWAoCIOConsoleService
 {
+    public bool Silent { get; set; }
+    public int IndentationLevel { get; set; }
+    public string CurrentPath { get; set; }
+
     // print-methods
     public void PrintLinesIn(params string[] lines);
 

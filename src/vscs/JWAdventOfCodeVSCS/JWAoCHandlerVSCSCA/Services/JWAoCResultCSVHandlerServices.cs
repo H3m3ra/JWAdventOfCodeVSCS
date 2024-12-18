@@ -19,8 +19,8 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
                     File.WriteAllText(settings.ResultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
                 }
 
-                consoleApplication.PrintPrefixOut();
-                consoleApplication.Print($"  store result... ");
+                consoleApplication.IOConsoleService.PrintPrefixOut();
+                consoleApplication.IOConsoleService.Print($"  store result... ");
                 try
                 {
                     File.AppendAllText(settings.ResultTargetPath, Environment.NewLine + string.Join(';', new string[] {
@@ -33,16 +33,16 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
                     string.Join(" ", result.ProgramArgs),
                     result.Response.ToString(true),
                 }));
-                    consoleApplication.Print($"was successful!{Environment.NewLine}");
+                    consoleApplication.IOConsoleService.Print($"was successful!{Environment.NewLine}");
                 }
                 catch
                 {
-                    consoleApplication.Print($"failed!{Environment.NewLine}");
+                    consoleApplication.IOConsoleService.Print($"failed!{Environment.NewLine}");
                 }
             }
             catch(Exception ex)
             {
-                consoleApplication.PrintLineOut($"  ERROR {ex.Message}");
+                consoleApplication.IOConsoleService.PrintLineOut($"  ERROR {ex.Message}");
             }
         }
     }
