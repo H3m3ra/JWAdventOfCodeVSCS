@@ -3,6 +3,7 @@ using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAdventOfCodeHandlingLibrary.Services;
+using System.Text.Json;
 
 namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
@@ -52,7 +53,16 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
             JWAoCProgram.GetHighestVersionOf(program.GetVersions(handler.ProgramExecutionService));
             var start = DateTime.Now;
             var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(handler.ProgramExecutionService));
-            var referenceDuration = DateTime.Now - start;
+            var referenceDuration = 0.32 * (DateTime.Now - start);
+            start = DateTime.Now;
+            var programVersion = handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
+            programVersion = (programVersion == null ? null : JsonSerializer.Deserialize<string>(programVersion));
+            referenceDuration += 0.34 * (DateTime.Now - start);
+            start = DateTime.Now;
+            var programAuthor = handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
+            programAuthor = (programAuthor == null ? null : JsonSerializer.Deserialize<string>(programAuthor));
+            referenceDuration += 0.34 * (DateTime.Now - start);
+
             IJWAoCHTTPResponse response;
 
             if (string.IsNullOrEmpty(version))
@@ -78,6 +88,8 @@ public class JWAoCCallCommand : JWAoCStringCommandBase
                         SubTask = handler.CurrentSub,
                         Duration = duration,
                         ProgramName = ProgramName,
+                        ProgramVersion = programVersion,
+                        ProgramAuthor = programAuthor,
                         Program = program,
                         ProgramArgs = args,
                         Response = response

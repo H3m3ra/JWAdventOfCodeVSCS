@@ -103,6 +103,6 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
 
     public string GetResultTargetPath(int taskYear, int taskDay, string subTask, string programName, string programVersion, string programAuthor)
     {
-        return GetTargetPathFromTargetPathPattern(TestsTargetPathPattern, taskYear, taskDay, subTask, ResultType, programName, programVersion, programAuthor);
+        return GetTargetPathFromTargetPathPattern(ResultsTargetPathPattern, taskYear, taskDay, subTask, ResultType, programName, programVersion, programAuthor);
     }
 }
