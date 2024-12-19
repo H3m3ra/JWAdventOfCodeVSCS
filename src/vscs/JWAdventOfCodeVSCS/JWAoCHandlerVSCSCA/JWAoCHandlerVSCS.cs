@@ -1,6 +1,6 @@
 ﻿using JWAdventOfCodeHandlerLibrary;
 using JWAdventOfCodeHandlerLibrary.Command;
-using JWAdventOfCodeHandlerLibrary.Services;
+using JWAdventOfCodeHandlerLibrary.Handler;
 using JWAdventOfCodeHandlerLibrary.Settings;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -13,18 +13,14 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     public const string PROGRAM_VERSION_FULL = "1.1.0.20241218123200";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public const string PROGRAM_VERSION = "v1.0";
-    public const string PROGRAM_AUTHOR = "JW-Hemera";
+    public const string PROGRAM_AUTHOR = "JWHemera";
 
     public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
     public static readonly Regex INPUT_REGEX = new Regex("input", RegexOptions.IgnoreCase);
     public static readonly Regex TEST_REGEX = new Regex("test", RegexOptions.IgnoreCase);
 
-    public const string TASK_SUFFIX = "_task.txt";
-    public const string INPUT_SUFFIX = "_input.txt";
-    public const string TEST_SUFFIX = "_test.txt";
-
     public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = new Dictionary<string, IJWAoCStringCommandFactory>();
-    public IList<IJWAoCCommandHandlerService> CommandHandlers { get; set; } = new List<IJWAoCCommandHandlerService>();
+    public IList<IJWAoCCommandHandler> CommandHandlers { get; set; } = new List<IJWAoCCommandHandler>();
 
     public int? CurrentYear { get { return currentYear; } set { currentYear = value; UpdateCurrentPath(); } }
     protected int? currentYear = null;

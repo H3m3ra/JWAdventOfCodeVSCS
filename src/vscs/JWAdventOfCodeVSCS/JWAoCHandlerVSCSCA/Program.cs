@@ -2,8 +2,8 @@
 using JWAdventOfCodeHandlerLibrary.Command;
 using JWAoCHandlerVSCSCA;
 using JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
+using JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 using JWAoCHandlerVSCSCA.Services;
-using JWAoCHandlerVSCSCA.Services.CommandHandlers;
 
 static IJWAoCCA Build()
 {
@@ -13,7 +13,8 @@ static IJWAoCCA Build()
         {
             //{ "?", null},
             //{ "a", null},
-            { "c", new JWAoCCallCommandFactory()},
+            { "ca", new JWAoCCallCommandFactory()},
+            { "ch", new JWAoCChangeCommandFactory()},
             { "g", new JWAoCGetCommandFactory()},
             //{ "h", null},
             { "s", new JWAoCSetCommandFactory()},
@@ -24,6 +25,8 @@ static IJWAoCCA Build()
         ProgramExecutionService = new JWAoCProgramExecutionService(),
         ResultHandlerService = new JWAoCResultCSVHandlerServices()
     };
+    currentAoCVSCS.CommandHandlers.Add(new JWAoCCallCommandHandler() { Handler = currentAoCVSCS });
+    currentAoCVSCS.CommandHandlers.Add(new JWAoCChangeCommandHandler() { Handler = currentAoCVSCS });
     currentAoCVSCS.CommandHandlers.Add(new JWAoCCurrentCommandHandler() { Handler = currentAoCVSCS });
     return currentAoCVSCS;
 }

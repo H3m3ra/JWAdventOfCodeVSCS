@@ -1,12 +1,11 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAdventOfCodeHandlerLibrary.Services;
+using JWAdventOfCodeHandlerLibrary.Handler;
 using JWAdventOfCodeHandlingLibrary.Services;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
-using System.Text.RegularExpressions;
 
-namespace JWAoCHandlerVSCSCA.Services.CommandHandlers;
+namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 
-public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
+public class JWAoCCurrentCommandHandler : IJWAoCCommandHandler
 {
     public JWAoCHandlerVSCS Handler { get; set; }
 
@@ -15,14 +14,7 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
     {
         if (command == null) return true;
 
-        if (command is JWAoCCallCommand)
-        {
-            Handler.CurrentYear = 2024;
-            Handler.CurrentDay = 4;
-            Handler.CurrentSub = "a";
-            return ((JWAoCCallCommand)command).Execute(Handler.Settings, Handler);
-        }
-        else if (command is JWAoCGetCommand)
+        if (command is JWAoCGetCommand)
         {
             var currentCommand = (JWAoCGetCommand)command;
             if (Handler.LoadSettrings("  Cannot ", true))
@@ -33,9 +25,9 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
         else if (command is JWAoCSetCommand)
         {
             var currentCommand = (JWAoCSetCommand)command;
-            if(Handler.LoadSettrings("  Cannot ", true))
+            if (Handler.LoadSettrings("  Cannot ", true))
             {
-                if(Handler.StoreSettings("  Cannot ", true))
+                if (Handler.StoreSettings("  Cannot ", true))
                 {
                     currentCommand.SetValues(Handler.Settings);
                 }
@@ -78,7 +70,7 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
                     try
                     {
                         var value = int.Parse(parts[0]);
-                        if (Handler.CurrentYear != null && (value >= 1 && value <= 31))
+                        if (Handler.CurrentYear != null && value >= 1 && value <= 31)
                         {
                             Handler.CurrentDay = value;
                         }
@@ -97,12 +89,12 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
                         {
                             var value = parts[0].Trim();
                             string currentSub = "";
-                            if (value.Length >= 2 && Char.IsDigit(value[1]))
+                            if (value.Length >= 2 && char.IsDigit(value[1]))
                             {
                                 Handler.CurrentDay = int.Parse(value.Substring(0, 2));
                                 currentSub = value.Substring(2).Trim();
                             }
-                            else if (Char.IsDigit(value[0]))
+                            else if (char.IsDigit(value[0]))
                             {
                                 Handler.CurrentDay = int.Parse(value.Substring(0, 1));
                                 currentSub = value.Substring(1).Trim();
@@ -114,7 +106,7 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
 
                             if (Handler.CurrentDay != null)
                             {
-                                Handler.CurrentSub = (currentSub.Length == 0 ? null : currentSub);
+                                Handler.CurrentSub = currentSub.Length == 0 ? null : currentSub;
                             }
                         }
                     }
@@ -152,23 +144,22 @@ public class JWAoCCurrentCommandHandler : IJWAoCCommandHandlerService
     {
         if (
             command == null ||
-            command is JWAoCCallCommand ||
             command is JWAoCGetCommand ||
             command is JWAoCSetCommand
         )
         {
             return true;
         }
-        if(command is JWAoCSimpleStringCommand)
+        if (command is JWAoCSimpleStringCommand)
         {
             var currentCommand = (JWAoCSimpleStringCommand)command;
 
-            return (
-                (currentCommand.Name.StartsWith("?") || currentCommand.Name.StartsWith("h")) ||
-                (currentCommand.Name.StartsWith("ch") || currentCommand.Name.StartsWith("y")) ||
+            return 
+                currentCommand.Name.StartsWith("?") || currentCommand.Name.StartsWith("h") ||
+                currentCommand.Name.StartsWith("ch") || currentCommand.Name.StartsWith("y") ||
                 currentCommand.Name.StartsWith("cr") ||
                 currentCommand.Name.StartsWith("sh")
-            );
+            ;
         }
         return false;
     }

@@ -1,8 +1,8 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
 
-namespace JWAdventOfCodeHandlerLibrary.Services;
+namespace JWAdventOfCodeHandlerLibrary.Handler;
 
-public interface IJWAoCCommandHandlerService
+public interface IJWAoCCommandHandler
 {
     // methods
     public bool HandleCommand(IJWAoCCommand command);
