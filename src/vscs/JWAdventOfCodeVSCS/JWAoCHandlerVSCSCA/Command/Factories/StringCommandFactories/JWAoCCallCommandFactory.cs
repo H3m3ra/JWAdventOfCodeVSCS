@@ -41,7 +41,7 @@ public class JWAoCCallCommandFactory : IJWAoCStringCommandFactory
         return new JWAoCCallCommand()
         {
             Name = "call",
-            Testing = commandName.ToLower() == "*",
+            Testing = commandName.ToLower() == "call*",
             ProgramName = args[0],
             ProgramArgs = programArgs,
             Source = originalSource
