@@ -74,6 +74,9 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         IJWAoCResultHandlerService currentResultHandlerService
     )
     {
+        Handler.CurrentYear = taskYear;
+        Handler.CurrentDay = taskDay;
+        Handler.CurrentSub = subTask;
         var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
         if (string.IsNullOrEmpty(sourceFilePath) || !File.Exists(sourceFilePath))
         {
