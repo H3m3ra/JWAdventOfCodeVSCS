@@ -10,7 +10,7 @@ public class JWAoCChangeCommand : JWAoCStringCommandBase
 
     public int? TaskDay { get; set; }
 
-    public string SubTask { get; set; }
+    public string? SubTask { get; set; }
 
-    public string Type { get; set; }
+    public string? Type { get; set; }
 }

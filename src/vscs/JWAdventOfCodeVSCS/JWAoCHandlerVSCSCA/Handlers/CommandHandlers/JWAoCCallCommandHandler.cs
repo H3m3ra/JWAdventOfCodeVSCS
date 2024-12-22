@@ -1,8 +1,11 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Data;
 using JWAdventOfCodeHandlerLibrary.Handler;
+using JWAdventOfCodeHandlerLibrary.Services;
+using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using System;
 using System.Text.Json;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
@@ -23,9 +26,6 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         {
             var program = Handler.Settings.Programs[command.ProgramName];
 
-            var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
-            if (string.IsNullOrEmpty(sourceFilePath)) return true;
-
             JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
             var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
             var programVersion = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
@@ -33,44 +33,86 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
             var programAuthor = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
             programAuthor = programAuthor == null ? null : JsonSerializer.Deserialize<string>(programAuthor);
 
-            IJWAoCHTTPResponse response;
-
             if (string.IsNullOrEmpty(version))
             {
-                response = new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404));
-            }
-            else
-            {
-                var args = command.GetSolveCallArgs(version, (int)Handler.CurrentYear, (int)Handler.CurrentDay, Handler.CurrentSub, sourceFilePath);
-                Handler.IOConsoleService.PrintLineOut($"  \"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
-
-                var start = DateTime.Now;
-                response = Handler.ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
-                var duration = DateTime.Now - start;
-
-                Handler.IOConsoleService.PrintLineOut($"  ...\"{command.ProgramName}\" finished. ({duration})");
-                Handler.ResultHandlerService.HandleResult(
-                    new JWAoCResult()
-                    {
-                        Timestamp = DateTime.Now,
-                        TaskYear = (int)Handler.CurrentYear,
-                        TaskDay = (int)Handler.CurrentDay,
-                        SubTask = Handler.CurrentSub,
-                        Duration = duration,
-                        ProgramName = command.ProgramName,
-                        ProgramVersion = programVersion,
-                        ProgramAuthor = programAuthor,
-                        Program = program,
-                        ProgramArgs = args,
-                        Response = response
-                    },
-                    Handler.Settings,
+                PrintResponseResult(
+                    new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)),
                     Handler.IOConsoleService
                 );
             }
-            if (response.StatusCode == 200) Handler.IOConsoleService.PrintLineOut($"{response.Content.ToString()}");
-            else Handler.IOConsoleService.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+            else
+            {
+                var taskDays = Handler.CurrentDay == null ? new int[31].Select((v, i) => i+1).ToArray() : new int[] { (int)Handler.CurrentDay };
+                var taskSubs = Handler.CurrentSub == null ? new string[] { "a", "b" } : new string[] { Handler.CurrentSub };
+                foreach (var d in taskDays)
+                {
+                    foreach (var s in taskSubs)
+                    {
+                        RequestResult(
+                            version, program, programVersion, programAuthor,
+                            (int)Handler.CurrentYear, d, s, type,
+                            command,
+                            Handler.Settings,
+                            Handler.ProgramExecutionService,
+                            Handler.IOConsoleService,
+                            Handler.ResultHandlerService
+                        );
+                    }
+                }
+            }
         }
         return true;
+    }
+
+    protected void RequestResult(
+        string version, JWAoCProgram program, string programVersion, string programAuthor,
+        int taskYear, int taskDay, string subTask, string type,
+        JWAoCCallCommand command,
+        IJWAoCSettings settings,
+        IJWAoCProgramExecutionService currentProgramExecutionService,
+        IJWAoCIOConsoleService currentIOConsoleService,
+        IJWAoCResultHandlerService currentResultHandlerService
+    )
+    {
+        var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
+        if (string.IsNullOrEmpty(sourceFilePath) || !File.Exists(sourceFilePath))
+        {
+            PrintResponseResult(new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails($"File \"{sourceFilePath}\" not found!", 404)), currentIOConsoleService);
+            return;
+        }
+
+        var args = command.GetSolveCallArgs(version, taskYear, taskDay, subTask, sourceFilePath);
+        currentIOConsoleService.PrintLineOut($"  \"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+
+        var start = DateTime.Now;
+        var response = currentProgramExecutionService.CallProgramWithLocalHTTP(program, args);
+        var duration = DateTime.Now - start;
+
+        currentIOConsoleService.PrintLineOut($"  ...\"{command.ProgramName}\" finished. ({duration})");
+        currentResultHandlerService.HandleResult(
+            new JWAoCResult()
+            {
+                Timestamp = DateTime.Now,
+                TaskYear = taskYear,
+                TaskDay = taskDay,
+                SubTask = subTask,
+                Duration = duration,
+                ProgramName = command.ProgramName,
+                ProgramVersion = programVersion,
+                ProgramAuthor = programAuthor,
+                Program = program,
+                ProgramArgs = args,
+                Response = response
+            },
+            settings,
+            currentIOConsoleService
+        );
+        PrintResponseResult(response, currentIOConsoleService);
+    }
+
+    protected void PrintResponseResult(IJWAoCHTTPResponse response, IJWAoCIOConsoleService currentIOConsoleService)
+    {
+        if (response.StatusCode == 200) currentIOConsoleService.PrintLineOut($"{response.Content.ToString()}");
+        else currentIOConsoleService.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
     }
 }

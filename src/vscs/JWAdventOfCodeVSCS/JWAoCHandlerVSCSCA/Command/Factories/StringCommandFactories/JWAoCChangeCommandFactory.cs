@@ -27,8 +27,8 @@ public class JWAoCChangeCommandFactory : IJWAoCStringCommandFactory
         {
             Name = "call",
             TaskYear = int.Parse(args[0]),
-            TaskDay = int.Parse(args[1]),
-            SubTask = args[2],
+            TaskDay = args.Length >= 2 ? int.Parse(args[1]) : null,
+            SubTask = args.Length >= 3 ? args[2] : null,
             Type = "input"
         };
     }
