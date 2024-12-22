@@ -144,6 +144,124 @@ class JWAoCHTTPService:
 
 
 
+def solve_2024_01a(filePath):
+	with open(filePath, 'r') as file:
+		content = file.read()
+		ns = list(map(lambda l: int(l.split("   ")[0]), content.splitlines()))
+		ms = list(map(lambda l: int(l.split("   ")[1]), content.splitlines()))
+	sum = 0
+	for i in range(0, len(ns)):
+		sum += abs(ns[i] - ms[i])
+	return sum
+
+def solve_2024_15a(filePath):
+	with open(filePath, 'r') as file:
+		lines = file.read().splitlines()
+		field = []
+		for i in range(0, len(lines)-2):
+			field.append(lines[i].split(""))
+		operations = lines[-1]
+
+	x = 0
+	y = 0
+	for i in range(0, len(field)):
+		for j in range(0, len(field[0])):
+			if field[i][j] == '@':
+				y = i
+				x = j
+
+	def move(a, b):
+		nonlocal field
+		nonlocal x
+		nonlocal y
+		if field[y+a][x+b] == '.':
+			field[y+a][x+b] = '@'
+			field[y][x] = '.'
+			x += b
+			y += a
+		elif field[y+a][x+b] == '0':
+			while field[y+a][x+b] == '0':
+				a += a
+				b += b
+			if field[y+a][x+b] != '#':
+				while field[y+a][x+b] != '@':
+					field[y+a][x+b] = '0'
+					a -= a
+					b -= b
+				field[y+a][x+b] = '@'
+				field[y][x] = '.'
+				x += b
+				y += a
+
+	for o in operations:
+		
+
+	sum = 0
+	for i in range(0, len(field)):
+		for j in range(0, len(field[0])):
+			if field[i][j] == 'O':
+				sum += 100*i+j
+	return sum
+
+def solve_2024_19a(filePath):
+	with open(filePath, 'r') as file:
+		lines = file.read().splitlines()
+		towelPatterns = lines[0].split(", ")
+		towels = []
+		for i in range(2, len(lines)):
+			towels.append(lines[i])
+
+	def isTowel(towel):
+		nonlocal towelPatterns
+
+		next_towels = set()
+		for p in towelPatterns:
+			if towel == p:
+				return True
+			elif towel.startswith(p):
+				next_towels.add(towel[len(p):])
+
+		for n in list(next_towels):
+			if isTowel(n):
+				return True
+		return False
+
+	sum = 0
+	for towel in towels:
+		if isTowel(towel):
+			sum += 1
+	return sum
+def solve_2024_19b(filePath):
+	with open(filePath, 'r') as file:
+		lines = file.read().splitlines()
+		towelPatterns = lines[0].split(", ")
+		towels = []
+		for i in range(2, len(lines)):
+			towels.append(lines[i])
+
+	def isTowel(towel):
+		nonlocal towelPatterns
+
+		next_towels = set()
+		for p in towelPatterns:
+			if towel == p:
+				return True
+			elif towel.startswith(p):
+				next_towels.add(towel[len(p):])
+
+		for n in list(next_towels):
+			if isTowel(n):
+				return True
+		return False
+
+	sum = 0
+	for towel in towels:
+		if isTowel(towel):
+			sum += 1
+	return sum
+
+
+
 class JWAoCProgramCABase(object):
 	# methods
 	def consoleResponseToLocalHTTPGetRequestFromURIString(self, requestURIString):
@@ -202,27 +320,24 @@ class JWAoC2024VSCS(JWAoCProgramCABase):
 			try:
 				if subTask == "a":
 					if taskDay == 1:
-						self.show(JWAoCHTTPResponse(200, self.solve_2024_01a(input)))
+						self.show(JWAoCHTTPResponse(200, solve_2024_01a(input)))
+					elif taskDay == 15:
+						self.show(JWAoCHTTPResponse(200, solve_2024_15a(input)))
+					elif taskDay == 19:
+						self.show(JWAoCHTTPResponse(200, solve_2024_19a(input)))
 					else:
 						self.show(JWAoCHTTPResponse(501))
 				elif subTask == "b":
-					self.show(JWAoCHTTPResponse(501))
+					if taskDay == 0:
+						pass
+					else:
+						self.show(JWAoCHTTPResponse(501))
 				else:
 					self.show(JWAoCHTTPErrorResponse(JWAoCHTTPProblemDetails("Sub task not found!", 404)))
 			except Exception as ex:
 				self.show(JWAoCHTTPErrorResponse(JWAoCHTTPProblemDetails(str(ex), 500)))
 		else:
 			self.show(JWAoCHTTPErrorResponse(JWAoCHTTPProblemDetails("Year not found!", 404)))
-
-	def solve_2024_01a(self, filePath):
-		with open(filePath, 'r') as file:
-			content = file.read()
-			ns = list(map(lambda l: int(l.split("   ")[0]), content.splitlines()))
-			ms = list(map(lambda l: int(l.split("   ")[1]), content.splitlines()))
-		sum = 0
-		for i in range(0, len(ns)):
-			sum += abs(ns[i] - ms[i])
-		return sum
 
 	# getter
 	@property
