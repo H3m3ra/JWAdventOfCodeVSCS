@@ -15,6 +15,10 @@ public interface IJWAoCIOConsoleService
 
     public void PrintLineOut(params string[] parts);
 
+    public void PrintIn(params string[] parts);
+
+    public void PrintOut(params string[] parts);
+
     public void PrintPrefixIn();
 
     public void PrintPrefixOut();

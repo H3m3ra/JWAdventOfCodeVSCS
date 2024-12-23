@@ -61,6 +61,23 @@ public class JWAoCIOConsoleService : IJWAoCIOConsoleService
         }
     }
 
+    public void PrintIn(params string[] parts)
+    {
+        if (!Silent)
+        {
+            PrintPrefixIn();
+            Print(parts);
+        }
+    }
+
+    public void PrintOut(params string[] parts)
+    {
+        if (!Silent)
+        {
+            PrintPrefixOut();
+            Print(parts);
+        }
+    }
 
     public void PrintPrefixIn()
     {

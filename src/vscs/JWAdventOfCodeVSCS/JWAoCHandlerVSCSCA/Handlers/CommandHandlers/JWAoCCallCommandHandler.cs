@@ -85,13 +85,13 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         }
 
         var args = command.GetSolveCallArgs(version, taskYear, taskDay, subTask, sourceFilePath);
-        currentIOConsoleService.PrintLineOut($"  \"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+        currentIOConsoleService.PrintOut($"\"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
 
         var start = DateTime.Now;
         var response = currentProgramExecutionService.CallProgramWithLocalHTTP(program, args);
         var duration = DateTime.Now - start;
 
-        currentIOConsoleService.PrintLineOut($"  ...\"{command.ProgramName}\" finished. ({duration})");
+        currentIOConsoleService.Print($" finished. ({duration}){Environment.NewLine}");
         currentResultHandlerService.HandleResult(
             new JWAoCResult()
             {
@@ -115,7 +115,21 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
 
     protected void PrintResponseResult(IJWAoCHTTPResponse response, IJWAoCIOConsoleService currentIOConsoleService)
     {
-        if (response.StatusCode == 200) currentIOConsoleService.PrintLineOut($"{response.Content.ToString()}");
-        else currentIOConsoleService.PrintLineOut($"ERROR {response.StatusCode}: {response.StatusName}");
+        if (response.StatusCode == 200)
+        {
+            currentIOConsoleService.PrintLineOut($"  {response.Content.ToString()}");
+        }
+        else
+        {
+            currentIOConsoleService.PrintLineOut($"  ERROR {response.StatusCode}: {response.StatusName}");
+            if(response.Content != null)
+            {
+                var data = response.Content is JWAoCHTTPProblemDetails ? ((JWAoCHTTPProblemDetails)response.Content).Message : response.Content.ToString();
+                foreach (var line in data.Split("\n").Select(l => "    "+l))
+                {
+                    currentIOConsoleService.PrintLineOut(line);
+                }
+            }
+        }
     }
 }
