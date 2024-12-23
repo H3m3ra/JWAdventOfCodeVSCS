@@ -11,6 +11,11 @@ public class JWAoCProgram
     [JsonIgnore]
     public JWAoCProgramType ProgramType { get; set; }
 
+    [JsonPropertyName("time_out")]
+    public string TimeOutText { get { return TimeOut.ToString(); } set { TimeOut = TimeSpan.Parse(value); } }
+    [JsonIgnore]
+    public TimeSpan TimeOut { get; set; } = new TimeSpan(0, 0, 30);
+
     [JsonPropertyName("src")]
     public string ProgramFilePath { get; set; }
 

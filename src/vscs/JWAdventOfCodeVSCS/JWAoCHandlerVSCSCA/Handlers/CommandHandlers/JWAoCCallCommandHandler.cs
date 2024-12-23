@@ -6,6 +6,7 @@ using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 using System;
+using System.Linq.Expressions;
 using System.Text.Json;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
@@ -26,39 +27,55 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         {
             var program = Handler.Settings.Programs[command.ProgramName];
 
-            JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
-            var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
-            var programVersion = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
-            programVersion = programVersion == null ? null : JsonSerializer.Deserialize<string>(programVersion);
-            var programAuthor = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
-            programAuthor = programAuthor == null ? null : JsonSerializer.Deserialize<string>(programAuthor);
+            try
+            {
+                JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
+                var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
+                var programVersion = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
+                programVersion = programVersion == null ? null : JsonSerializer.Deserialize<string>(programVersion);
+                var programAuthor = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
+                programAuthor = programAuthor == null ? null : JsonSerializer.Deserialize<string>(programAuthor);
 
-            if (string.IsNullOrEmpty(version))
+                if (string.IsNullOrEmpty(version))
+                {
+                    PrintResponseResult(
+                        new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)),
+                        Handler.IOConsoleService
+                    );
+                }
+                else if(Handler.CurrentYear != null)
+                {
+                    var bufferedCurrentDay = Handler.CurrentDay;
+                    var bufferedCurrentSub = Handler.CurrentSub;
+
+                    var taskDays = Handler.CurrentDay == null ? new int[31].Select((v, i) => i + 1).ToArray() : new int[] { (int)Handler.CurrentDay };
+                    var taskSubs = Handler.CurrentSub == null ? new string[] { "a", "b" } : new string[] { Handler.CurrentSub };
+                    foreach (var d in taskDays)
+                    {
+                        foreach (var s in taskSubs)
+                        {
+                            RequestResult(
+                                version, program, programVersion, programAuthor,
+                                (int)Handler.CurrentYear, d, s, type,
+                                command,
+                                Handler.Settings,
+                                Handler.ProgramExecutionService,
+                                Handler.IOConsoleService,
+                                Handler.ResultHandlerService
+                            );
+                        }
+                    }
+
+                    Handler.CurrentDay = bufferedCurrentDay;
+                    Handler.CurrentSub = bufferedCurrentSub;
+                }
+            }
+            catch(Exception ex)
             {
                 PrintResponseResult(
                     new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)),
                     Handler.IOConsoleService
                 );
-            }
-            else
-            {
-                var taskDays = Handler.CurrentDay == null ? new int[31].Select((v, i) => i+1).ToArray() : new int[] { (int)Handler.CurrentDay };
-                var taskSubs = Handler.CurrentSub == null ? new string[] { "a", "b" } : new string[] { Handler.CurrentSub };
-                foreach (var d in taskDays)
-                {
-                    foreach (var s in taskSubs)
-                    {
-                        RequestResult(
-                            version, program, programVersion, programAuthor,
-                            (int)Handler.CurrentYear, d, s, type,
-                            command,
-                            Handler.Settings,
-                            Handler.ProgramExecutionService,
-                            Handler.IOConsoleService,
-                            Handler.ResultHandlerService
-                        );
-                    }
-                }
             }
         }
         return true;
@@ -122,7 +139,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         else
         {
             currentIOConsoleService.PrintLineOut($"  ERROR {response.StatusCode}: {response.StatusName}");
-            if(response.Content != null)
+            if(response.Content != null && (response.Content is JWAoCHTTPProblemDetails || !string.IsNullOrWhiteSpace(response.Content.ToString())))
             {
                 var data = response.Content is JWAoCHTTPProblemDetails ? ((JWAoCHTTPProblemDetails)response.Content).Message : response.Content.ToString();
                 foreach (var line in data.Split("\n").Select(l => "    "+l))

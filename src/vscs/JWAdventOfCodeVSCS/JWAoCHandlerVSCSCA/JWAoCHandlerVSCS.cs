@@ -56,8 +56,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                 bool execute;
                 if (Interactive)
                 {
-                    IOConsoleService.PrintPrefixIn();
-                    IOConsoleService.Print($"Execute file from path \"{args[1]}\"? (y/n) ");
+                    IOConsoleService.PrintIn($"Execute file from path \"{args[1]}\"? (y/n) ");
                     execute = IOConsoleService.GetLineIn().Trim().ToLower().StartsWith("y");
                 }
                 else

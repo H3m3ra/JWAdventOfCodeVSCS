@@ -58,21 +58,20 @@ public class JWAoCGetCommand : JWAoCStringCommandBase
             {
                 var program = entry.Value;
                 lines.Add($"  \"{entry.Key}\" ({program.Type}) \"{program.ProgramFilePath}\"");
-                lines.Add($"    type: {program.Type}");
                 if (program.ProgramType == JWAoCProgramType.RAW)
                 {
                     if (program.ProgramHandler == null)
                     {
-                        lines.Add($"    -: No handler settings available!");
+                        lines.Add($"    -:        No handler settings available!");
                     }
                     else
                     {
-                        if (program.ProgramHandler.BuilderFilePath != null) lines.Add($"    builder: \"{program.ProgramHandler.BuilderFilePath}\"");
+                        if (program.ProgramHandler.BuilderFilePath != null) lines.Add($"    builder:     \"{program.ProgramHandler.BuilderFilePath}\"");
                         if (program.ProgramHandler.InterpreterFilePath != null) lines.Add($"    interpreter: \"{program.ProgramHandler.InterpreterFilePath}\"");
-                        if (program.ProgramHandler.CompilerFilePath != null) lines.Add($"    compiler: \"{program.ProgramHandler.CompilerFilePath}\"");
+                        if (program.ProgramHandler.CompilerFilePath != null) lines.Add($"    compiler:    \"{program.ProgramHandler.CompilerFilePath}\"");
                     }
                 }
-                lines.Add($"    path: \"{program.ProgramFilePath}\"");
+                lines.Add($"    timeout:  {program.TimeOut}");
                 if (entry.Value.IsAvailable())
                 {
                     var versions = program.GetVersions(programExecutionService);

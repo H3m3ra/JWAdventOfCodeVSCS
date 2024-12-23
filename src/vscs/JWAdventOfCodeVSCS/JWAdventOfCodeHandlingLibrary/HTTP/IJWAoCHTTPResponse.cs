@@ -7,6 +7,7 @@ public interface IJWAoCHTTPResponse
         {200, "OK"},
         {400, "Bad Request"},
         {404, "Not Found"},
+        {408, "Request Timeout"},
         {422, "Unprocessable Entity"},
         {500, "Internal Server Error"},
         {501, "Not Implemented"},

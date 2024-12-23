@@ -16,30 +16,19 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
 
     public IJWAoCHTTPResponse CallProgramWithLocalHTTP(JWAoCProgram program, params string[] args)
     {
-        if (!program.IsAvailable())
-        {
-            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program is not available!", 503));
-        }
+        if (!program.IsAvailable()) return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program is not available!", 503));
 
-        if (program.ProgramType == JWAoCProgramType.EXE)
-        {
-            return CallProgramWithLocalHTTP(program.ProgramFilePath, args);
-        }
-        else if (program.ProgramType == JWAoCProgramType.RAW)
-        {
-            return CallRawProgramWithLocalHTTP(program, args);
-        }
-        else
-        {
-            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program type not supported!", 400));
-        }
+        if (program.ProgramType == JWAoCProgramType.EXE) return CallProgramWithLocalHTTP(program.TimeOut, program.ProgramFilePath, args);
+        else if (program.ProgramType == JWAoCProgramType.RAW) return CallRawProgramWithLocalHTTP(program.TimeOut, program, args);
+
+        return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program type not supported!", 400));
     }
 
-    protected IJWAoCHTTPResponse CallRawProgramWithLocalHTTP(JWAoCProgram program, params string[] args)
+    protected IJWAoCHTTPResponse CallRawProgramWithLocalHTTP(TimeSpan timeoutSpan, JWAoCProgram program, params string[] args)
     {
         if (program.ProgramFilePath.ToLower().EndsWith(".exe"))
         {
-            return CallProgramWithLocalHTTP(program.ProgramFilePath, args);
+            return CallProgramWithLocalHTTP(timeoutSpan, program.ProgramFilePath, args);
         }
         else if (program.ProgramHandler != null)
         {
@@ -51,6 +40,7 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
             if (program.ProgramHandler.InterpreterFilePath != null)
             {
                 return CallProgramWithLocalHTTP(
+                    timeoutSpan,
                     program.ProgramHandler.InterpreterFilePath,
                     Enumerable.Concat(new List<string>() { program.ProgramFilePath }, args).ToArray()
                 );
@@ -65,34 +55,81 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
         return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Program configuration not supported!", 400));
     }
 
-    protected IJWAoCHTTPResponse CallProgramWithLocalHTTP(string programFilePath, params string[] args)
+    protected IJWAoCHTTPResponse CallProgramWithLocalHTTP(TimeSpan timeoutSpan, string programFilePath, params string[] args)
     {
-        IList<string> currentHTTPHeaders = new List<string>();
-        string? currentHTTPBodyText = null;
-        try
+        var process = CreateProcess(programFilePath, args);
+        if (process == null) return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Process creation failed!", 404));
+
+        var respondedLines = new List<string>();
+
+        var taskCompletionSource = new TaskCompletionSource();
+        var task = taskCompletionSource.Task;
+        Task.Factory.StartNew(() =>
         {
-            using (var process = CreateProcess(programFilePath, args))
+            using (process)
             {
-                using (var sr = process?.StandardOutput)
+                using (var sr = process.StandardOutput)
                 {
-                    string line;
+                    string? line;
                     while ((line = sr.ReadLine()) != null)
                     {
-                        if (string.IsNullOrEmpty(line))
-                        {
-                            currentHTTPBodyText = "";
-                        }
-                        else if (currentHTTPBodyText == null)
-                        {
-                            currentHTTPHeaders.Add(line);
-                        }
-                        else
-                        {
-                            currentHTTPBodyText += line;
-                        }
+                        respondedLines.Add(line);
                     }
                 }
-                process?.WaitForExit();
+                process.WaitForExit();
+            }
+            taskCompletionSource.SetResult();
+        });
+
+        var timeout = false;
+        var timeoutEndDate = DateTime.Now + timeoutSpan;
+        while (!task.IsCompleted && !timeout)
+        {
+            if (DateTime.Now >= timeoutEndDate) timeout = true;
+        }
+
+        if (timeout)
+        {
+            taskCompletionSource.SetCanceled();
+            return new JWAoCHTTPResponse(408, string.Join('\n', respondedLines));
+        }
+
+        return GetResponseOfRespondedLines(respondedLines);
+    }
+
+    protected Process? CreateProcess(string programFilePath, params string[] args)
+    {
+        var startInfo = new ProcessStartInfo();
+        startInfo.Arguments = string.Join(' ', args);
+        startInfo.CreateNoWindow = false;
+        startInfo.FileName = programFilePath;
+        startInfo.RedirectStandardOutput = true;
+        startInfo.RedirectStandardError = true;
+        startInfo.UseShellExecute = false;
+        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
+        return Process.Start(startInfo);
+    }
+
+    protected IJWAoCHTTPResponse GetResponseOfRespondedLines(IList<string> respondedLines)
+    {
+        try
+        {
+            var currentHTTPHeaders = new List<string>();
+            string? currentHTTPBodyText = null;
+            foreach (var line in respondedLines)
+            {
+                if (string.IsNullOrEmpty(line))
+                {
+                    currentHTTPBodyText = "";
+                }
+                else if (currentHTTPBodyText == null)
+                {
+                    currentHTTPHeaders.Add(line);
+                }
+                else
+                {
+                    currentHTTPBodyText += line;
+                }
             }
 
             return new JWAoCHTTPResponse()
@@ -112,18 +149,5 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
         {
             return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails(ex.Message, 422));
         }
-    }
-
-    protected Process? CreateProcess(string programFilePath, params string[] args)
-    {
-        var startInfo = new ProcessStartInfo();
-        startInfo.Arguments = string.Join(' ', args);
-        startInfo.CreateNoWindow = false;
-        startInfo.FileName = programFilePath;
-        startInfo.RedirectStandardOutput = true;
-        startInfo.RedirectStandardError = true;
-        startInfo.UseShellExecute = false;
-        startInfo.WindowStyle = ProcessWindowStyle.Hidden;
-        return Process.Start(startInfo);
     }
 }
