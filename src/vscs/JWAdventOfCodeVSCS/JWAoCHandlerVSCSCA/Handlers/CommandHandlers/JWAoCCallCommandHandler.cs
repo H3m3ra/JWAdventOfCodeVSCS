@@ -48,7 +48,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
                     var bufferedCurrentDay = Handler.CurrentDay;
                     var bufferedCurrentSub = Handler.CurrentSub;
 
-                    var taskDays = Handler.CurrentDay == null ? new int[31].Select((v, i) => i + 1).ToArray() : new int[] { (int)Handler.CurrentDay };
+                    var taskDays = Handler.CurrentDay == null ? new int[25].Select((v, i) => i + 1).ToArray() : new int[] { (int)Handler.CurrentDay };
                     var taskSubs = Handler.CurrentSub == null ? new string[] { "a", "b" } : new string[] { Handler.CurrentSub };
                     foreach (var d in taskDays)
                     {

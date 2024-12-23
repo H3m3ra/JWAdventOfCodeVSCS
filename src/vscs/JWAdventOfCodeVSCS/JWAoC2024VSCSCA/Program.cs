@@ -1,0 +1,3 @@
+﻿using JWAoC2024VSCSCA;
+
+JWAoC2024VSCS.Main(args);

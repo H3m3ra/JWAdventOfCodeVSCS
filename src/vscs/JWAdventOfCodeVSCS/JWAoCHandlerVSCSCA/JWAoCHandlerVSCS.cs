@@ -10,9 +10,9 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "1.1.0.20241218123200";
+    public const string PROGRAM_VERSION_FULL = "1.1.1.20241223213457";
     public const string PROGRAM_NAME = "JWAoCVSCS";
-    public const string PROGRAM_VERSION = "v1.0";
+    public const string PROGRAM_VERSION = "v1.1";
     public const string PROGRAM_AUTHOR = "JWHemera";
 
     public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
@@ -162,11 +162,11 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
             {
                 if (CurrentSub == null)
                 {
-                    IOConsoleService.CurrentPath = $":{CurrentYear}/{CurrentDay}";
+                    IOConsoleService.CurrentPath = $":{CurrentYear}/{(CurrentDay < 10 ? "0" : "")}{CurrentDay}";
                 }
                 else
                 {
-                    IOConsoleService.CurrentPath = $":{CurrentYear}/{CurrentDay}/{CurrentSub}";
+                    IOConsoleService.CurrentPath = $":{CurrentYear}/{(CurrentDay < 10 ? "0" : "")}{CurrentDay}/{CurrentSub}";
                 }
             }
         }

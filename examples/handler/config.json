@@ -20,16 +20,19 @@
     "programs": {
       "CS2024": {
         "type": "exe",
+        "time_out": "00:00:30.0000000",
         "src": "\\JWAdventOfCode\\build\\vscs\\solutions\\JWAoC2024VSCSCA\\JWAoC2024VSCSCA.exe",
         "handler": null
       },
       "HS2024": {
         "type": "raw",
+        "time_out": "00:00:30.0000000",
         "src": "\\JWAdventOfCode\\build\\hs\\solutions\\JWAoC2024HSCA\\JWAoC2024HSCA.exe",
         "handler": null
       },
       "Java2024": {
         "type": "raw",
+        "time_out": "00:00:30.0000000",
         "src": "\\JWAdventOfCode\\build\\java\\solutions\\JWAoC2024JavaCA\\JWAoC2024JavaCA.java",
         "handler": {
           "builder": null,
@@ -39,6 +42,7 @@
       },
       "Py2024": {
         "type": "raw",
+        "time_out": "00:00:30.0000000",
         "src": "\\JWAdventOfCode\\build\\py\\solutions\\JWAoC2024PyCA\\JWAoC2024PyCA.py",
         "handler": {
           "builder": null,

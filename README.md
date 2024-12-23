@@ -1,23 +1,32 @@
-# JWAdventOfCode (2024.12.14)
+# JWAdventOfCode (2024.12.24)
 
 ## Info
-	author:  JW-Hemera
-	version: v1.0 / 1.0.0.20241204181000
+	author:  JWHemera
+	version: - (See doc for handlers or solution)
 	status:  active unfinished
 
 ## Description
-	1. Contains a basic *handler* to organise solving AdventOfCode tasks
-	  by calling solving *program*.
-		The handlers features are:
+	1. Contains *handler*s to organise solving AdventOfCode tasks
+	  by calling any extern solving *program*.
+		The *handler*'s features should be:
 			+ simple access to stored tasks, inputs and tests
+				+ configurate own naming system
 			+ saving results and metrics in a .csv
 			+ calling extern solving programs through "JWAoCProgramInterface"
-		The handler is implemented in multiple languages:
-			+ JWAoCHandlerVSCSCA - see doc/handlers/JWAoCHandlerVSCSCA for more.
+				+ call raw source files by building, compiling or interpreting
+				+ stop execution by a configurable timeout
+				+ show errors or results
+		Available *handler*s in coding languages:
+			+ JWAoCHandlerVSCSCA
+				v1.1 / 1.1.1.20241223213457 request JWAoCProgramInterface v1
+				See doc/handlers/JWAoCHandlerVSCSCA for more.
 
 	2. Presenting own solutions for AoC
-		+ JWAoC2024VSCSCA (active working)
-		Prepared *programs* exist also for Java, Python and Haskell.
+		+ JWAoC2024VSCSCA (active unfinished)
+			v1.0 / 1.0.0.20240912193200 respond JWAoCProgramInterface v1
+		+ JWAoC2024PyCA (active unfinished)
+			v1.0 / 1.0.0.20241218184700 respond JWAoCProgramInterface v1
+		Prepared *programs* exist also for Java and Haskell.
 
 ## JWAoCProgramInterface
 
