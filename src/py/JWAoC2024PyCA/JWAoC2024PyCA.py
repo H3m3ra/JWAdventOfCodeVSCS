@@ -158,14 +158,22 @@ def solve_2024_15a(filePath):
 	with open(filePath, 'r') as file:
 		lines = file.read().splitlines()
 		field = []
-		for i in range(0, len(lines)-2):
-			field.append(list(lines[i]))
-		operations = lines[-1]
+		c = 0
+		for line in lines:
+			c += 1
+			if len(line) == 0:
+				break
+			field.append(list(line))
+		operations = ""
+		for i in range(c, len(lines)):
+			operations += lines[i]
 
 	x = 0
 	y = 0
+	#print(len(field[0]), len(field))
 	for i in range(0, len(field)):
 		for j in range(0, len(field[0])):
+			#print(j, i)
 			if field[i][j] == '@':
 				y = i
 				x = j
@@ -174,24 +182,22 @@ def solve_2024_15a(filePath):
 		nonlocal field
 		nonlocal x
 		nonlocal y
+		#print((x,y), (a,b))
 		if field[y+a][x+b] == '.':
-			print("!!!!!!")
 			field[y+a][x+b] = '@'
 			field[y][x] = '.'
 			x += b
 			y += a
-		elif field[y+a][x+b] == '0':
-			print("????????????????????")
+		elif field[y+a][x+b] == 'O':
 			u = a
 			v = b
-			while field[y+u][x+v] == '0':
+			while field[y+u][x+v] == 'O':
 				u += a
 				v += b
-			print(field[y+u][x+v])
+			#print((x,y), (b,a), (v,u))
 			if field[y+u][x+v] == '.':
-				print("g")
 				while field[y+u][x+v] != '@':
-					field[y+u][x+v] = '0'
+					field[y+u][x+v] = 'O'
 					u -= a
 					v -= b
 				field[y+a][x+b] = '@'
@@ -212,11 +218,11 @@ def solve_2024_15a(filePath):
 	sum = 0
 	for i in range(0, len(field)):
 		for j in range(0, len(field[0])):
-			print(field[i][j], end="")
-			if field[i][j] == '0':
+			#print(field[i][j], end="")
+			if field[i][j] == 'O':
 				sum += 100*i+j
-		print()
-	print()
+		#print()
+	#print()
 	return sum
 
 def solve_2024_19a(filePath):
