@@ -78,7 +78,7 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
                 }
                 process.WaitForExit();
             }
-            taskCompletionSource.SetResult();
+            if(!task.IsCanceled) taskCompletionSource.SetResult();
         });
 
         var timeout = false;
