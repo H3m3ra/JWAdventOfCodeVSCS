@@ -8,7 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JWAdventOfCodeHandlingLibrary\JWAdventOfCodeHandlingLibrary.csproj" />
     <ProjectReference Include="..\JWAdventOfCodeProgramLibrary\JWAdventOfCodeProgramLibrary.csproj" />
   </ItemGroup>
 
