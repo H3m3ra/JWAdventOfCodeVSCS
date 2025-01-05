@@ -28,12 +28,17 @@
 		o solve GET /v1/author     Get the author of the solution program.
 		o solve GET /v1/version    Get the version of the solution program.
 		o solve GET /v1/{year}/{task_day}/{sub_task}?input={input_file_path}
-			Parameters are "input", any spefic name or "args" for unnamed.
+			Parameters can be any name value pair especially:
+				input    required  Path to the input file.
+				debug    optional  If the content should be debug information.
+				args     optional  Collection of any unnamed arguments.
 
 	Examples:
 		Request:  ```http GET /versions```
 		Response:
 			```
+			http/1.1 200 OK
+			
 			[
 			  "v1"
 			]
@@ -48,7 +53,7 @@
 			```
 
 		Request:  ```anything arg0 arg1 arg2```
-		Response: No valid endpoint expected - any or none response allowed
+		Response: No valid endpoint expected - any or no response allowed
 
 		Request:  ```http```
 		Response: ```http/1.1 400 Bad Request```

@@ -5,8 +5,6 @@ using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
-using System;
-using System.Linq.Expressions;
 using System.Text.Json;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
@@ -109,24 +107,28 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         var duration = DateTime.Now - start;
 
         currentIOConsoleService.Print($" finished. ({duration}){Environment.NewLine}");
-        currentResultHandlerService.HandleResult(
-            new JWAoCResult()
-            {
-                Timestamp = DateTime.Now,
-                TaskYear = taskYear,
-                TaskDay = taskDay,
-                SubTask = subTask,
-                Duration = duration,
-                ProgramName = command.ProgramName,
-                ProgramVersion = programVersion,
-                ProgramAuthor = programAuthor,
-                Program = program,
-                ProgramArgs = args,
-                Response = response
-            },
-            settings,
-            currentIOConsoleService
-        );
+
+        if (!command.Testing && string.Compare(command.ProgramArgs.GetValueOrDefault("debug"), "true", true) != 0)
+        {
+            currentResultHandlerService.HandleResult(
+                new JWAoCResult()
+                {
+                    Timestamp = DateTime.Now,
+                    TaskYear = taskYear,
+                    TaskDay = taskDay,
+                    SubTask = subTask,
+                    Duration = duration,
+                    ProgramName = command.ProgramName,
+                    ProgramVersion = programVersion,
+                    ProgramAuthor = programAuthor,
+                    Program = program,
+                    ProgramArgs = args,
+                    Response = response
+                },
+                settings,
+                currentIOConsoleService
+            );
+        }
         PrintResponseResult(response, currentIOConsoleService);
     }
 

@@ -14,6 +14,8 @@ public abstract class JWAoCProgramCABase : IJWAoCProgramCA
 
     public virtual string[] ProgramVersions { get; protected set; }
 
+    public virtual bool Debug { get; protected set; }
+
     // methods
     public void ConsoleResponseToLocalHTTPGetRequest(string requestURIString)
     {
@@ -25,6 +27,8 @@ public abstract class JWAoCProgramCABase : IJWAoCProgramCA
 
     protected void ConsoleResponseToLocalHTTPGetRequest(string[] route, Dictionary<string, string> parameters)
     {
+        Debug = string.Compare(parameters.GetValueOrDefault("debug"), "true", true) == 0;
+
         var REGEX_NUMBER = new Regex("^\\d+$");
 
         if (route.Length == 1 && route[0] == "versions")

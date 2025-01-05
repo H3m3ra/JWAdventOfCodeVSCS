@@ -132,16 +132,18 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
                 }
             }
 
+            if (currentHTTPHeaders.Count == 0) return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Empty response!", 422));
+
             return new JWAoCHTTPResponse()
             {
                 Version = new Regex(@"HTTP/\d+\.\d+").Match(currentHTTPHeaders.First()).Value.Substring(5),
                 StatusCode = int.Parse(new Regex("\\d\\d\\d").Match(currentHTTPHeaders.First()).Value),
                 Headers = new Dictionary<string, string>(
-                            currentHTTPHeaders
-                            .Skip(1)
-                            .Select(l => { var ps = l.Split(": "); return KeyValuePair.Create(ps[0], ps[1]); })
-                            .ToList()
-                        ),
+                        currentHTTPHeaders
+                        .Skip(1)
+                        .Select(l => { var ps = l.Split(": "); return KeyValuePair.Create(ps[0], ps[1]); })
+                        .ToList()
+                    ),
                 Content = string.IsNullOrEmpty(currentHTTPBodyText) ? null : currentHTTPBodyText
             };
         }

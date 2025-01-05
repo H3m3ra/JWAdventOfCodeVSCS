@@ -38,6 +38,11 @@ public class JWAoCCallCommandFactory : IJWAoCStringCommandFactory
             }
         }
 
+        if (commandName.Contains("?"))
+        {
+            programArgs.Add("debug", "true");
+        }
+
         return new JWAoCCallCommand()
         {
             Name = "call",

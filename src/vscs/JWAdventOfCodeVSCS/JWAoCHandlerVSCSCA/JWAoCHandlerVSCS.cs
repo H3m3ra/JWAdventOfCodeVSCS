@@ -10,14 +10,10 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "1.1.1.20241223213457";
+    public const string PROGRAM_VERSION_FULL = "1.2.0.20250105185144";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public const string PROGRAM_VERSION = "v1.1";
     public const string PROGRAM_AUTHOR = "JWHemera";
-
-    public static readonly Regex TASK_REGEX = new Regex("task", RegexOptions.IgnoreCase);
-    public static readonly Regex INPUT_REGEX = new Regex("input", RegexOptions.IgnoreCase);
-    public static readonly Regex TEST_REGEX = new Regex("test", RegexOptions.IgnoreCase);
 
     public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = new Dictionary<string, IJWAoCStringCommandFactory>();
     public IList<IJWAoCCommandHandler> CommandHandlers { get; set; } = new List<IJWAoCCommandHandler>();
