@@ -147,7 +147,7 @@ public class JWAoCProgramExecutionService : IJWAoCProgramExecutionService
         }
         catch (Exception ex)
         {
-            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails(ex.Message, 422));
+            return new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails(ex.Message+string.Join("", respondedLines.Select(l => "\n  "+l)), 422));
         }
     }
 }

@@ -230,16 +230,22 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                 (CurrentDay == null || new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
                 (CurrentSub == null || new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(filePath).Success);
         }
-        return IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
+
+        var currentTypeRegex = new Regex(type, RegexOptions.IgnoreCase);
+        var oppositeTypeRegex = new Regex(
+            string.Join("|", Settings.DataTypes.Where(d => !string.IsNullOrWhiteSpace(d) && d != type)),
+            RegexOptions.IgnoreCase
+        );
+
+        var results = IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
             .Select(s => Tuple.Create(
-                new Regex(type, RegexOptions.IgnoreCase).Match(s).Success,
+                currentTypeRegex.Match(s).Success || !oppositeTypeRegex.Match(s).Success,
                 (CurrentYear != null && new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(s).Success),
                 (CurrentDay != null && new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(s).Success),
                 (CurrentSub != null && new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(s).Success),
                 s
             ))
-            .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5)
-            .Select(e => e.Item5)
-            .ToList();
+            .OrderByDescending(e => e.Item1).ThenByDescending(e => e.Item2).ThenByDescending(e => e.Item3).ThenByDescending(e => e.Item4).ThenBy(e => e.Item5);
+        return results.Select(e => e.Item5).ToList();
     }
 }

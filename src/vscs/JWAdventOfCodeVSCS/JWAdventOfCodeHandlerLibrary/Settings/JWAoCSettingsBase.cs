@@ -35,6 +35,9 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
     [JsonPropertyName("programs")]
     public Dictionary<string, JWAoCProgram> Programs { get; set; } = new Dictionary<string, JWAoCProgram>();
 
+    [JsonIgnore]
+    public string[] DataTypes { get { return new string[] { InputType, TaskType, TestType, ResultType }; } }
+
     public JWAoCSettingsBase()
     {
 

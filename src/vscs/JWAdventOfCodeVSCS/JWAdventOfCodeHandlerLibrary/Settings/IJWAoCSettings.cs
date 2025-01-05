@@ -21,6 +21,8 @@ public interface IJWAoCSettings
 
     public Dictionary<string, JWAoCProgram> Programs { get; set; }
 
+    public string[] DataTypes { get; }
+
     // init-methods
     public bool Init();
 
