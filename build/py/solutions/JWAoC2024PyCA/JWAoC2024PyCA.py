@@ -154,6 +154,45 @@ def solve_2024_01a(filePath):
 		sum += abs(ns[i] - ms[i])
 	return sum
 
+def solve_2024_13a(filePath):
+	with open(filePath, 'r') as file:
+		lines = file.read().splitlines()
+		tasks = []
+		for i in range(0, len(lines), 4):
+			a = lines[i][13:].split(", Y+")
+			b = lines[i+1][13:].split(", Y+")
+			p = lines[i+2][10:].split(", Y=")
+			tasks.append((
+				(int(a[0]), int(a[1])),
+				(int(b[0]), int(b[1])),
+				(int(p[0]), int(p[1]))
+			))
+			#print(tasks[-1])
+
+	def minTokens(v, r, t, b):
+		if v[2][0] == r[0] and v[2][1] == r[1]:
+			return t
+		elif v[2][0] < r[0] or v[2][1] < r[1]:
+			return None
+		else:
+			t1 = None
+			if not(b):
+				t1 = minTokens(v, (r[0]+v[0][0], r[1]+v[0][1]), t+3, False)
+			t2 = minTokens(v, (r[0]+v[1][0], r[1]+v[1][1]), t+1, True)
+			if t1 is None:
+				return t2
+			elif t2 is None:
+				return t1
+			else:
+				return min(t1, t2)
+
+	sum = 0
+	for task in tasks:
+		r = minTokens(task, (0, 0), 0, False)
+		if r is not None:
+			sum += r
+	return sum
+
 def solve_2024_15a(filePath):
 	with open(filePath, 'r') as file:
 		lines = file.read().splitlines()
@@ -343,6 +382,8 @@ class JWAoC2024VSCS(JWAoCProgramCABase):
 				if subTask == "a":
 					if taskDay == 1:
 						self.show(JWAoCHTTPResponse(200, solve_2024_01a(input)))
+					elif taskDay == 13:
+						self.show(JWAoCHTTPResponse(200, solve_2024_13a(input)))
 					elif taskDay == 15:
 						self.show(JWAoCHTTPResponse(200, solve_2024_15a(input)))
 					elif taskDay == 19:
