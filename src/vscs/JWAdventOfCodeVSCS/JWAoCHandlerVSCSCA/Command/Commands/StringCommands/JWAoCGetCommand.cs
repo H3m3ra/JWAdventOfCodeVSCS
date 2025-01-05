@@ -6,7 +6,7 @@ namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
 
 public class JWAoCGetCommand : JWAoCStringCommandBase
 {
-    public virtual string PropertyName { get; set; }
+    public virtual string PropertyName { get; set; } = null!;
 
     public override string[] Args { get { return PropertyName == null ? new string[] { } : new string[] { PropertyName }; } set { } }
 
@@ -79,9 +79,9 @@ public class JWAoCGetCommand : JWAoCStringCommandBase
                     var version = JWAoCProgram.GetHighestVersionOf(versions);
                     lines.Add($"    version:  \"{version}\"");
                     var result = programExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author");
-                    lines.Add($"    author:   {(result.StatusCode == 200 ? $"{result.Content.ToString()}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
+                    lines.Add($"    author:   {(result.StatusCode == 200 ? $"{result.Content}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
                     result = programExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version");
-                    lines.Add($"    version:  {(result.StatusCode == 200 ? $"{result.Content.ToString()}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
+                    lines.Add($"    version:  {(result.StatusCode == 200 ? $"{result.Content}" : $"ERROR {result.StatusCode}: {result.StatusName}")}");
                 }
                 else
                 {

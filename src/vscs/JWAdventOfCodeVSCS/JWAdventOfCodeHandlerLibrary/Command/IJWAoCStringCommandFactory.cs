@@ -3,5 +3,5 @@
 public interface IJWAoCStringCommandFactory
 {
     // get-methods
-    public IJWAoCStringCommand CreateCommandFromString(string source);
+    public IJWAoCStringCommand? CreateCommandFromString(string? source);
 }

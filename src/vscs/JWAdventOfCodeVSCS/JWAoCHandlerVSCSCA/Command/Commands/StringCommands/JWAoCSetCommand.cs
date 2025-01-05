@@ -2,9 +2,9 @@
 
 public class JWAoCSetCommand : JWAoCStringCommandBase
 {
-    public virtual string PropertyName { get; set; }
+    public virtual string PropertyName { get; set; } = null!;
 
-    public virtual string PropertyValue { get; set; }
+    public virtual string PropertyValue { get; set; } = null!;
 
     public override string[] Args { get { return new string[] { PropertyName, PropertyValue }; } set { } }
 

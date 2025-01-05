@@ -6,13 +6,13 @@ namespace JWAdventOfCodeProgramLibrary;
 
 public abstract class JWAoCProgramCABase : IJWAoCProgramCA
 {
-    public virtual string[] HTTPAPIVersions { get; protected set; }
+    public virtual string[] HTTPAPIVersions { get; protected set; } = null!;
 
-    public virtual string[] ProgramHelps { get; protected set; }
+    public virtual string[] ProgramHelps { get; protected set; } = null!;
 
-    public virtual string[] ProgramAuthors { get; protected set; }
+    public virtual string[] ProgramAuthors { get; protected set; } = null!;
 
-    public virtual string[] ProgramVersions { get; protected set; }
+    public virtual string[] ProgramVersions { get; protected set; } = null!;
 
     public virtual bool Debug { get; protected set; }
 

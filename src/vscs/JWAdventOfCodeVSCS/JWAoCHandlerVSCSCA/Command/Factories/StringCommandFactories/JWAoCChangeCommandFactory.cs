@@ -7,7 +7,7 @@ namespace JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
 public class JWAoCChangeCommandFactory : IJWAoCStringCommandFactory
 {
     // get-methods
-    public IJWAoCStringCommand CreateCommandFromString(string source)
+    public IJWAoCStringCommand? CreateCommandFromString(string source)
     {
         string originalSource = source;
 

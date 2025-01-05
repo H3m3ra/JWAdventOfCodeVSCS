@@ -67,10 +67,10 @@ public class JWAoCHTTPService
     {
         var parameters = new Dictionary<string, string>();
 
-        source = (source.Contains(HTTP_PARAMETERS_SEPARATOR) ? source.Substring(source.IndexOf(HTTP_PARAMETERS_SEPARATOR) +1) : null);
-        if (String.IsNullOrEmpty(source)) return parameters;
+        var currentSource = (source.Contains(HTTP_PARAMETERS_SEPARATOR) ? source.Substring(source.IndexOf(HTTP_PARAMETERS_SEPARATOR) + 1) : null);
+        if (string.IsNullOrWhiteSpace(currentSource)) return parameters;
 
-        foreach (var parameterSource in source.Split(HTTP_PARAMETER_SEPARATOR))
+        foreach (var parameterSource in currentSource.Split(HTTP_PARAMETER_SEPARATOR))
         {
             var paramParts = parameterSource.Split(HTTP_PARAMETER_VALUE_SEPARATOR);
             parameters.Add(ToStringFromURIString(paramParts[0]), ToStringFromURIString(paramParts[1]));

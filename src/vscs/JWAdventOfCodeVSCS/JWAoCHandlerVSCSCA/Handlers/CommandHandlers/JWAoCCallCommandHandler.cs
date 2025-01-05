@@ -11,16 +11,20 @@ namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 
 public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallCommand>
 {
-    public JWAoCHandlerVSCS Handler { get; set; }
+    public JWAoCHandlerVSCS Handler { get; set; } = null!;
 
     // methods
     public override bool HandleSpecificCommand(JWAoCCallCommand command)
     {
+        ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
+
         return Execute(command.Testing ? Handler.Settings.TestType : Handler.Settings.InputType, command);
     }
 
     protected bool Execute(string type, JWAoCCallCommand command)
     {
+        ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
+
         if (Handler.LoadSettrings("  Cannot ", true) && Handler.Settings.Programs.ContainsKey(command.ProgramName))
         {
             var program = Handler.Settings.Programs[command.ProgramName];
@@ -68,7 +72,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
                     Handler.CurrentSub = bufferedCurrentSub;
                 }
             }
-            catch(Exception ex)
+            catch//(Exception ex)
             {
                 PrintResponseResult(
                     new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)),
@@ -80,7 +84,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
     }
 
     protected void RequestResult(
-        string version, JWAoCProgram program, string programVersion, string programAuthor,
+        string version, JWAoCProgram program, string? programVersion, string? programAuthor,
         int taskYear, int taskDay, string subTask, string type,
         JWAoCCallCommand command,
         IJWAoCSettings settings,
@@ -89,6 +93,8 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         IJWAoCResultHandlerService currentResultHandlerService
     )
     {
+        ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
+
         Handler.CurrentYear = taskYear;
         Handler.CurrentDay = taskDay;
         Handler.CurrentSub = subTask;
@@ -119,8 +125,8 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
                     SubTask = subTask,
                     Duration = duration,
                     ProgramName = command.ProgramName,
-                    ProgramVersion = programVersion,
-                    ProgramAuthor = programAuthor,
+                    ProgramVersion = programVersion ?? "Unknown",
+                    ProgramAuthor = programAuthor ?? "Unknown",
                     Program = program,
                     ProgramArgs = args,
                     Response = response
@@ -136,7 +142,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
     {
         if (response.StatusCode == 200)
         {
-            currentIOConsoleService.PrintLineOut($"  {response.Content.ToString()}");
+            currentIOConsoleService.PrintLineOut($"  {response.Content}");
         }
         else
         {
@@ -144,9 +150,12 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
             if(response.Content != null && (response.Content is JWAoCHTTPProblemDetails || !string.IsNullOrWhiteSpace(response.Content.ToString())))
             {
                 var data = response.Content is JWAoCHTTPProblemDetails ? ((JWAoCHTTPProblemDetails)response.Content).Message : response.Content.ToString();
-                foreach (var line in data.Split("\n").Select(l => "    "+l))
+                if (data != null)
                 {
-                    currentIOConsoleService.PrintLineOut(line);
+                    foreach (var line in data.Split("\n").Select(l => "    " + l))
+                    {
+                        currentIOConsoleService.PrintLineOut(line);
+                    }
                 }
             }
         }

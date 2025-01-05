@@ -12,7 +12,7 @@ public abstract class JWAoCHandlerCABase<T> : IJWAoCCA where T : IJWAoCSettings
     public IJWAoCResultHandlerService ResultHandlerService { get; set; } = null!;
 
     protected JWAoCSettingsSerializer<T> SettingsSerializer { get; set; } = null!;
-    public T Settings { get; set; }
+    public T? Settings { get; set; }
 
     public bool Interactive { get; set; } = true;
     public bool Silent { get { return IOConsoleService.Silent; } set { IOConsoleService.Silent = value; } }
@@ -23,9 +23,9 @@ public abstract class JWAoCHandlerCABase<T> : IJWAoCCA where T : IJWAoCSettings
     public abstract void Dispose();
 
     // execute-methods
-    public bool ExecuteExternCommand(string source)
+    public bool ExecuteExternCommand(string? source)
     {
-        IOConsoleService.PrintLineIn(source);
+        IOConsoleService.PrintLineIn(source ?? string.Empty);
         return ExecuteCommand(source);
     }
 
@@ -35,7 +35,7 @@ public abstract class JWAoCHandlerCABase<T> : IJWAoCCA where T : IJWAoCSettings
         return ExecuteCommand(Console.ReadLine());
     }
 
-    protected abstract bool ExecuteCommand(string source);
+    protected abstract bool ExecuteCommand(string? source);
 
-    public abstract bool ExecuteCommand(IJWAoCCommand command);
+    public abstract bool ExecuteCommand(IJWAoCCommand? command);
 }

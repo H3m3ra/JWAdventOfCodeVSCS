@@ -17,7 +17,7 @@ public class JWAoCProgram
     public TimeSpan TimeOut { get; set; } = new TimeSpan(0, 0, 30);
 
     [JsonPropertyName("src")]
-    public string ProgramFilePath { get; set; }
+    public string ProgramFilePath { get; set; } = string.Empty;
 
     [JsonPropertyName("handler")]
 

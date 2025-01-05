@@ -6,6 +6,8 @@ namespace JWAoCHandlerVSCSCA.Services;
 
 public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
 {
+    public static readonly string CSV_HEADER = string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" });
+
     // methods
     public void HandleResult(JWAoCResult result, IJWAoCSettings settings, IJWAoCIOConsoleService currcentIOConsoleService)
     {
@@ -30,13 +32,17 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
     {
         try
         {
-            if (!File.Exists(resultTargetPath))
+            if (!File.Exists(resultTargetPath) || File.ReadAllText(resultTargetPath).Trim().Length == 0)
             {
-                Directory.CreateDirectory(Directory.GetParent(resultTargetPath).ToString());
-            }
-            if (File.Exists(resultTargetPath) && File.ReadAllText(resultTargetPath).Trim().Length == 0)
-            {
-                File.WriteAllText(resultTargetPath, string.Join(';', new string[] { "Timestamp", "Task", "Result", "Duration", "Program", "Path", "Request", "Response" }));
+                if (!File.Exists(resultTargetPath))
+                {
+                    var resultTargetDirectory = Directory.GetParent(resultTargetPath)?.ToString();
+                    if(resultTargetDirectory != null)
+                    {
+                        Directory.CreateDirectory(resultTargetDirectory);
+                    }
+                }
+                File.WriteAllText(resultTargetPath, CSV_HEADER);
             }
         }
         catch (Exception ex)
@@ -57,7 +63,7 @@ public class JWAoCResultCSVHandlerServices : IJWAoCResultHandlerService
                 result.ProgramName,
                 result.Program.ProgramFilePath,
                 string.Join(" ", result.ProgramArgs),
-                result.Response.ToString(true),
+                result.Response.ToString(true)
             }));
             currcentIOConsoleService.Print($"was successful!{Environment.NewLine}");
         }

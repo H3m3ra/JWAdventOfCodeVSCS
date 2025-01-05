@@ -71,7 +71,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
                     IOConsoleService.IndentationLevel = 0;
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 IOConsoleService.IndentationLevel = 0;
                 IOConsoleService.PrintLineOut($"Cannot execute file from path \"{args[1]}\"!");
@@ -86,7 +86,7 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     }
 
     // methods
-    protected override bool ExecuteCommand(string source)
+    protected override bool ExecuteCommand(string? source)
     {
         if (string.IsNullOrEmpty(source)) return true;
 
@@ -104,8 +104,10 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
         return true;
     }
 
-    public override bool ExecuteCommand(IJWAoCCommand command)
+    public override bool ExecuteCommand(IJWAoCCommand? command)
     {
+        if (command == null) return true;
+
         var handlers = CommandHandlers.Where(h => h.CanHandle(command)).ToList();
 
         if (handlers.Count == 0)
