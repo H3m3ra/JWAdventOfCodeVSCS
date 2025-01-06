@@ -31,6 +31,8 @@
 			Parameters can be any name value pair especially:
 				input    required  Path to the input file.
 				debug    optional  If the content should be debug information.
+				check    optional  If the request should be validated as much as possible
+				                     by return any ProblemDetails without solving the task.
 				args     optional  Collection of any unnamed arguments.
 
 	Examples:
