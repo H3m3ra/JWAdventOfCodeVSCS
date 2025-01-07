@@ -10,9 +10,9 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "1.2.0.20250105185144";
+    public const string PROGRAM_VERSION_FULL = "0.3.1.20250107211407";
     public const string PROGRAM_NAME = "JWAoCVSCS";
-    public const string PROGRAM_VERSION = "v1.1";
+    public static readonly string PROGRAM_VERSION = $"v{PROGRAM_VERSION_FULL[..^15]}";
     public const string PROGRAM_AUTHOR = "JWHemera";
 
     public IDictionary<string, IJWAoCStringCommandFactory> CommandFactories { get; set; } = new Dictionary<string, IJWAoCStringCommandFactory>();
