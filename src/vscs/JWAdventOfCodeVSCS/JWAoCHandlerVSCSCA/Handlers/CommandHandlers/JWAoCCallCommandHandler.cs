@@ -89,9 +89,10 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
             {
                 foreach (var s in taskSubs)
                 {
-                    var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
                     Handler.CurrentDay = d;
                     Handler.CurrentSub = s;
+
+                    var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
 
                     var args = command.GetSolveCallArgs(version, (int)Handler.CurrentYear, d, s, sourceFilePath ?? string.Empty, false);
                     Handler.IOConsoleService.PrintOut($"\"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");

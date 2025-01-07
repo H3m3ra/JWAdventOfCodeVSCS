@@ -221,19 +221,19 @@ public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
     // get-methods
     public IList<string> GetSourceFilePaths(string[] sourcePaths, string type)
     {
-        bool AllowedFilePath(string filePath)
-        {
-            return new Regex(type, RegexOptions.IgnoreCase).Match(filePath).Success ||
-                (CurrentYear == null || new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
-                (CurrentDay == null || new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
-                (CurrentSub == null || new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(filePath).Success);
-        }
-
         var currentTypeRegex = new Regex(type, RegexOptions.IgnoreCase);
         var oppositeTypeRegex = new Regex(
             string.Join("|", Settings.DataTypes.Where(d => !string.IsNullOrWhiteSpace(d) && d != type)),
             RegexOptions.IgnoreCase
         );
+
+        bool AllowedFilePath(string filePath)
+        {
+            return currentTypeRegex.Match(filePath).Success || !oppositeTypeRegex.Match(filePath).Success ||
+                (CurrentYear == null || new Regex(@"^.*[^\d]+" + CurrentYear.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
+                (CurrentDay == null || new Regex(@"^.*[^\d]+0*" + CurrentDay.ToString() + @"[^\d]+.*$").Match(filePath).Success) ||
+                (CurrentSub == null || new Regex(@"^.*[^\w]+" + CurrentSub + @"[^\w]+.*$").Match(filePath).Success);
+        }
 
         var results = IOService.GetSourceFilePaths(AllowedFilePath, sourcePaths)
             .Select(s => Tuple.Create(
