@@ -1,8 +1,8 @@
-# JWAoCHandlerVSCSCA (2024.12.18)
+# JWAoCHandlerVSCSCA (2025.01.07)
 
 ## Info
 	author:  JW-Hemera
-	version: v1.0 / 1.0.0.20241215221000
+	version: v0.3.1 / 0.3.1.20250107211407
 	status:  active unfinished
 
 ## Description
