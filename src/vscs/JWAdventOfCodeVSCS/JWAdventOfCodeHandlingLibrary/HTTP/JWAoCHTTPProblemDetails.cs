@@ -24,4 +24,11 @@ public class JWAoCHTTPProblemDetails
         Message = message;
         HTTPStatus = currentHTTPStatus;
     }
+
+    public JWAoCHTTPProblemDetails(string messageTitle, string messageDetail, int currentHTTPStatus)
+    {
+        Title = messageTitle;
+        Message = messageDetail;
+        HTTPStatus = currentHTTPStatus;
+    }
 }
