@@ -56,7 +56,7 @@ public abstract class JWAoCProgramCABase : IJWAoCProgramCA
         }
         else
         {
-            Print(IJWAoCHTTPResponse.BAD_REQUEST);
+            Print(JWAoCHTTPResponse.RESPOND_BAD_REQUEST);
         }
     }
 

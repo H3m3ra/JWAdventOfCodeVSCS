@@ -1,4 +1,5 @@
-﻿using JWAdventOfCodeHandlerLibrary.Settings.Program;
+﻿using JWAdventOfCodeHandlerLibrary.Settings.Check;
+using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.Services;
 using System.Text.Json.Serialization;
 
@@ -34,6 +35,11 @@ public abstract class JWAoCSettingsBase : IJWAoCSettings
 
     [JsonPropertyName("programs")]
     public Dictionary<string, JWAoCProgram> Programs { get; set; } = new Dictionary<string, JWAoCProgram>();
+
+    [JsonPropertyName("check_mode")]
+    public string CheckModeValue { get { return CheckMode.ToString().ToLower(); } set { CheckMode = (JWAoCCheckMode)(Enum.Parse(typeof(JWAoCCheckMode), value.ToUpper()) ?? JWAoCCheckMode.FRIENDLY); } }
+    [JsonIgnore]
+    public JWAoCCheckMode CheckMode { get; set; } = JWAoCCheckMode.FRIENDLY;
 
     [JsonIgnore]
     public string[] DataTypes { get { return new string[] { InputType, TaskType, TestType, ResultType }; } }

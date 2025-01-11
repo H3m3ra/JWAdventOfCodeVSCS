@@ -2,79 +2,92 @@
 using JWAdventOfCodeHandlerLibrary.Handler;
 using JWAdventOfCodeHandlerLibrary.Services;
 using JWAdventOfCodeHandlerLibrary.Settings;
+using JWAdventOfCodeHandlerLibrary.Settings.Check;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
 using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using System;
 using System.Text.Json;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 
 public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallCommand>
 {
+    public IJWAoCSettingsService<JWAoCVSCSSettings> SettingsService { get; protected set; }
+    public IJWAoCProgramExecutionService ProgramExecutionService { get; protected set; }
+    public IJWAoCIOConsoleService IOConsoleService { get; protected set; }
+    public IJWAoCResultHandlerService ResultHandlerService { get; protected set; }
+
     public JWAoCHandlerVSCS Handler { get; set; } = null!;
+
+    public JWAoCCallCommandHandler(
+        IJWAoCSettingsService<JWAoCVSCSSettings> currentSettingsService,
+        IJWAoCProgramExecutionService currentProgramExecutionService,
+        IJWAoCIOConsoleService currentIOConsoleService,
+        IJWAoCResultHandlerService currentResultHandlerService
+    )
+    {
+        SettingsService = currentSettingsService;
+        ProgramExecutionService = currentProgramExecutionService;
+        IOConsoleService = currentIOConsoleService;
+        ResultHandlerService = currentResultHandlerService;
+    }
 
     // methods
     public override bool HandleSpecificCommand(JWAoCCallCommand command)
     {
-        ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
+        var settings = SettingsService.GetSettings();
 
-        return Execute(command.Testing ? Handler.Settings.TestType : Handler.Settings.InputType, command);
+        ArgumentNullException.ThrowIfNull(settings, nameof(settings));
+
+        return Execute(command.Testing ? settings.TestType : settings.InputType, command);
     }
 
     protected bool Execute(string type, JWAoCCallCommand command)
     {
-        ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
-
         if (
             Handler.CurrentYear != null &&
             Handler.LoadSettrings("  Cannot ", true) &&
-            Handler.Settings.Programs.ContainsKey(command.ProgramName)
+            Handler.Settings != null && Handler.Settings.Programs.ContainsKey(command.ProgramName)
         )
         {
+            var settings = SettingsService.GetSettings();
+            ArgumentNullException.ThrowIfNull(settings, nameof(settings));
+
             var program = Handler.Settings.Programs[command.ProgramName];
 
-            JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
-            var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(Handler.ProgramExecutionService));
+            JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
+            var version = JWAoCProgram.GetHighestVersionOf(program.GetVersions(ProgramExecutionService));
             if (string.IsNullOrEmpty(version))
             {
-                PrintResponseResult(
-                    new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)),
-                    Handler.IOConsoleService
-                );
+                PrintResponseResult( new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails("Not able to request without a matching version!", 404)));
                 return true;
             }
 
             bool lazyLoadedMetaDataLoaded = false;
             string? programVersion = null;
             string? programAuthor = null;
-
             void LazyLoadMetaData()
             {
                 if (!lazyLoadedMetaDataLoaded)
                 {
-                    programVersion = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
+                    programVersion = ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/version").Content?.ToString();
                     if (programVersion != null)
                     {
                         try
                         {
                             programVersion = JsonSerializer.Deserialize<string>(programVersion);
                         }
-                        catch
-                        {
-                            programVersion = null;
-                        }
+                        catch { }
                     }
-                    programAuthor = Handler.ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
+                    programAuthor = ProgramExecutionService.CallProgramWithLocalHTTPGet(program, $"/{version}/author").Content?.ToString();
                     if (programAuthor != null)
                     {
                         try
                         {
                             programAuthor = JsonSerializer.Deserialize<string>(programAuthor);
                         }
-                        catch
-                        {
-                            programVersion = null;
-                        }
+                        catch { }
                     }
                     lazyLoadedMetaDataLoaded = true;
                 }
@@ -92,29 +105,36 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
                     Handler.CurrentDay = d;
                     Handler.CurrentSub = s;
 
-                    var sourceFilePath = Handler.GetSourceFilePaths(Handler.Settings.InputsSourcePaths, type).FirstOrDefault();
+                    var sourceFilePath = Handler.GetSourceFilePaths(settings.InputsSourcePaths, type).FirstOrDefault();
 
-                    var args = command.GetSolveCallArgs(version, (int)Handler.CurrentYear, d, s, sourceFilePath ?? string.Empty, false);
-                    Handler.IOConsoleService.PrintOut($"\"{command.ProgramName}\" with \"{string.Join(" ", args)}\" starting...");
+                    var defaultArgs = command.GetSolveCallArgs(version, (int)Handler.CurrentYear, d, s, sourceFilePath ?? string.Empty, false);
+                    IOConsoleService.PrintOut($"\"{command.ProgramName}\" with \"{string.Join(" ", defaultArgs)}\" starting...");
 
-                    if (CheckSpecificTask(
-                        version, program,
-                        (int)Handler.CurrentYear, d, s, sourceFilePath,
-                        command,
-                        Handler.ProgramExecutionService,
-                        Handler.IOConsoleService
-                    ))
+                    if (string.IsNullOrEmpty(sourceFilePath) || !File.Exists(sourceFilePath))
                     {
-                        LazyLoadMetaData();
-                        RequestSpecificTaskResult(
-                            version, program, programVersion, programAuthor,
-                            (int)Handler.CurrentYear, d, s, sourceFilePath,
-                            command,
-                            Handler.Settings,
-                            Handler.ProgramExecutionService,
-                            Handler.IOConsoleService,
-                            Handler.ResultHandlerService
+                        IOConsoleService.Print($" stopped. {Environment.NewLine}");
+                        PrintResponseResult(new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails($"File \"{sourceFilePath}\" not found!", 404)));
+                    }
+                    else
+                    {
+                        var result = ExecuteForSpecificTask(
+                            version, program, (int)Handler.CurrentYear, d, s, sourceFilePath,
+                            command, settings
                         );
+                        if(result != null)
+                        {
+                            LazyLoadMetaData();
+                            result.ProgramVersion = programVersion ?? result.ProgramVersion;
+                            result.ProgramAuthor = programAuthor ?? result.ProgramAuthor;
+
+                            IOConsoleService.Print($" finished. ({result.Duration}){Environment.NewLine}");
+
+                            if (!command.Testing)
+                            {
+                                ResultHandlerService.HandleResult(result, settings, IOConsoleService);
+                            }
+                            PrintResponseResult(result.Response);
+                        }
                     }
                 }
             }
@@ -125,87 +145,118 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
         return true;
     }
 
-    protected bool CheckSpecificTask(
-        string version, JWAoCProgram program,
-        int taskYear, int taskDay, string subTask, string? sourceFilePath,
-        JWAoCCallCommand command,
-        IJWAoCProgramExecutionService currentProgramExecutionService,
-        IJWAoCIOConsoleService currentIOConsoleService
+    protected JWAoCResult? ExecuteForSpecificTask(
+        string version, JWAoCProgram program, int taskYear, int taskDay, string subTask, string sourceFilePath,
+        JWAoCCallCommand command, IJWAoCSettings settings
     )
     {
-        if (string.IsNullOrEmpty(sourceFilePath) || !File.Exists(sourceFilePath))
+        JWAoCResult? checkResult = null;
+        if (settings.CheckMode != JWAoCCheckMode.NONE)
         {
-            currentIOConsoleService.Print($" stopped. {Environment.NewLine}");
-            PrintResponseResult(new JWAoCHTTPErrorResponse(new JWAoCHTTPProblemDetails($"File \"{sourceFilePath}\" not found!", 404)), currentIOConsoleService);
-            return false;
-        }
-        var checkResponse = currentProgramExecutionService.CallProgramWithLocalHTTP(
-            program,
-            command.GetSolveCallArgs(version, taskYear, taskDay, subTask, sourceFilePath, true)
-        );
-        if (checkResponse.StatusCode != 200)
-        {
-            currentIOConsoleService.Print($" stopped. {Environment.NewLine}");
-            PrintResponseResult(checkResponse, currentIOConsoleService);
-            return false;
+            checkResult = CheckSpecificTask(version, program, taskYear, taskDay, subTask, sourceFilePath, command, settings);
         }
 
-        return true;
+        if (settings.CheckMode == JWAoCCheckMode.NONE || checkResult != null)
+        {
+            if (settings.CheckMode == JWAoCCheckMode.STRICT && checkResult != null)
+            {
+                checkResult.Response.Content = null;
+            }
+
+            if (checkResult != null && checkResult.Response.Content != null)
+            {
+                return checkResult;
+            }
+            else
+            {
+                return RequestSpecificTaskResult(version, program, taskYear, taskDay, subTask, sourceFilePath, command, settings);
+            }
+        }
+        return null;
     }
 
-    protected void RequestSpecificTaskResult(
-        string version, JWAoCProgram program, string? programVersion, string? programAuthor,
-        int taskYear, int taskDay, string subTask, string sourceFilePath,
-        JWAoCCallCommand command,
-        IJWAoCSettings settings,
-        IJWAoCProgramExecutionService currentProgramExecutionService,
-        IJWAoCIOConsoleService currentIOConsoleService,
-        IJWAoCResultHandlerService currentResultHandlerService
+    protected JWAoCResult? CheckSpecificTask(
+        string version, JWAoCProgram program, int taskYear, int taskDay, string subTask, string sourceFilePath,
+        JWAoCCallCommand command, IJWAoCSettings settings
+    )
+    {
+        var programResponse = GetProgramResponse(version, program, taskYear, taskDay, subTask, sourceFilePath, true, command);
+        var checkResponse = programResponse.Item2;
+
+        if (checkResponse.StatusCode != 200)
+        {
+            IOConsoleService.Print($" stopped. {Environment.NewLine}");
+            PrintResponseResult(checkResponse);
+            return null;
+        }
+
+        if (settings.CheckMode == JWAoCCheckMode.STRICT)
+        {
+            IOConsoleService.Print($" checked...");
+        }
+
+        return new JWAoCResult()
+        {
+            Timestamp = DateTime.Now,
+            TaskYear = taskYear,
+            TaskDay = taskDay,
+            SubTask = subTask,
+            Duration = programResponse.Item3,
+            ProgramName = command.ProgramName,
+            ProgramVersion = "Unknown",
+            ProgramAuthor = "Unknown",
+            Program = program,
+            ProgramArgs = programResponse.Item1,
+            Response = checkResponse
+        };
+    }
+
+    protected JWAoCResult RequestSpecificTaskResult(
+        string version, JWAoCProgram program, int taskYear, int taskDay, string subTask, string sourceFilePath,
+        JWAoCCallCommand command, IJWAoCSettings settings
     )
     {
         ArgumentNullException.ThrowIfNull(Handler.Settings, nameof(Handler.Settings));
 
-        var args = command.GetSolveCallArgs(version, taskYear, taskDay, subTask, sourceFilePath, false);
+        var programResponse = GetProgramResponse(version, program, taskYear, taskDay, subTask, sourceFilePath, false, command);
 
-        var start = DateTime.Now;
-        var response = currentProgramExecutionService.CallProgramWithLocalHTTP(program, args);
-        var duration = DateTime.Now - start;
-
-        currentIOConsoleService.Print($" finished. ({duration}){Environment.NewLine}");
-
-        if (!command.Testing && string.Compare(command.ProgramArgs.GetValueOrDefault("debug"), "true", true) != 0)
+        return new JWAoCResult()
         {
-            currentResultHandlerService.HandleResult(
-                new JWAoCResult()
-                {
-                    Timestamp = DateTime.Now,
-                    TaskYear = taskYear,
-                    TaskDay = taskDay,
-                    SubTask = subTask,
-                    Duration = duration,
-                    ProgramName = command.ProgramName,
-                    ProgramVersion = programVersion ?? "Unknown",
-                    ProgramAuthor = programAuthor ?? "Unknown",
-                    Program = program,
-                    ProgramArgs = args,
-                    Response = response
-                },
-                settings,
-                currentIOConsoleService
-            );
-        }
-        PrintResponseResult(response, currentIOConsoleService);
+            Timestamp = DateTime.Now,
+            TaskYear = taskYear,
+            TaskDay = taskDay,
+            SubTask = subTask,
+            Duration = programResponse.Item3,
+            ProgramName = command.ProgramName,
+            ProgramVersion = "Unknown",
+            ProgramAuthor = "Unknown",
+            Program = program,
+            ProgramArgs = programResponse.Item1,
+            Response = programResponse.Item2
+        };
     }
 
-    protected void PrintResponseResult(IJWAoCHTTPResponse response, IJWAoCIOConsoleService currentIOConsoleService)
+    protected Tuple<string[], IJWAoCHTTPResponse, TimeSpan> GetProgramResponse(
+        string version, JWAoCProgram program, int taskYear, int taskDay, string subTask, string sourceFilePath, bool check,
+        JWAoCCallCommand command
+    )
+    {
+        var args = command.GetSolveCallArgs(version, taskYear, taskDay, subTask, sourceFilePath, check);
+        var start = DateTime.Now;
+        var response = ProgramExecutionService.CallProgramWithLocalHTTP(program, args);
+        var duration = DateTime.Now - start;
+        return Tuple.Create(args, response, duration);
+    }
+
+    protected void PrintResponseResult(IJWAoCHTTPResponse response)
     {
         if (response.StatusCode == 200)
         {
-            currentIOConsoleService.PrintLineOut($"  {response.Content}");
+            IOConsoleService.PrintLineOut($"  {response.Content}");
         }
         else
         {
-            currentIOConsoleService.PrintLineOut($"  ERROR {response.StatusCode}: {response.StatusName}");
+            IOConsoleService.PrintLineOut($"  ERROR {response.StatusCode}: {response.StatusName}");
             if(response.Content != null && (response.Content is JWAoCHTTPProblemDetails || !string.IsNullOrWhiteSpace(response.Content.ToString())))
             {
                 var data = response.Content is JWAoCHTTPProblemDetails ? ((JWAoCHTTPProblemDetails)response.Content).Message : response.Content.ToString();
@@ -213,7 +264,7 @@ public class JWAoCCallCommandHandler : JWAoCSpecificCommandHandler<JWAoCCallComm
                 {
                     foreach (var line in data.Split("\n").Select(l => "    " + l))
                     {
-                        currentIOConsoleService.PrintLineOut(line);
+                        IOConsoleService.PrintLineOut(line);
                     }
                 }
             }

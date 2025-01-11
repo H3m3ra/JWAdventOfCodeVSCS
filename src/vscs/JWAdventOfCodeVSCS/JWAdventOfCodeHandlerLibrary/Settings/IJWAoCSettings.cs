@@ -1,4 +1,5 @@
-﻿using JWAdventOfCodeHandlerLibrary.Settings.Program;
+﻿using JWAdventOfCodeHandlerLibrary.Settings.Check;
+using JWAdventOfCodeHandlerLibrary.Settings.Program;
 
 namespace JWAdventOfCodeHandlerLibrary.Settings;
 
@@ -20,6 +21,8 @@ public interface IJWAoCSettings
     public string ResultsTargetPathPattern { get; set; }
 
     public Dictionary<string, JWAoCProgram> Programs { get; set; }
+
+    public JWAoCCheckMode CheckMode { get; set; }
 
     public string[] DataTypes { get; }
 

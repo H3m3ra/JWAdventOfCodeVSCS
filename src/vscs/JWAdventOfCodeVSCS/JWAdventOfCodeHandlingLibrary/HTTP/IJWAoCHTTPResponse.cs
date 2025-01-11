@@ -13,7 +13,6 @@ public interface IJWAoCHTTPResponse
         {501, "Not Implemented"},
         {503, "Service Unavailable"},
     };
-    public static readonly IJWAoCHTTPResponse BAD_REQUEST = new JWAoCHTTPResponse(400);
 
     public int StatusCode { get; set; }
 

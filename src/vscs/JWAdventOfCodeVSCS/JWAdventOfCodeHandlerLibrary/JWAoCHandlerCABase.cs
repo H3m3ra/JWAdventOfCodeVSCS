@@ -10,6 +10,7 @@ public abstract class JWAoCHandlerCABase<T> : IJWAoCCA where T : IJWAoCSettings
     public IJWAoCIOConsoleService IOConsoleService { get; set; } = null!;
     public IJWAoCProgramExecutionService ProgramExecutionService { get; set; } = null!;
     public IJWAoCResultHandlerService ResultHandlerService { get; set; } = null!;
+    public IJWAoCSettingsService<T> SettingsService { get; set; } = null!;
 
     protected JWAoCSettingsSerializer<T> SettingsSerializer { get; set; } = null!;
     public T? Settings { get; set; }

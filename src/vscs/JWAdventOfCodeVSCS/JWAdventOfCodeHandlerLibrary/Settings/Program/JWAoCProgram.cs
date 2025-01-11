@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 
 namespace JWAdventOfCodeHandlerLibrary.Settings.Program;
 
-public class JWAoCProgram
+public class JWAoCProgram : IJWAoCProgram
 {
     [JsonPropertyName("type")]
     public string Type { get{ return ProgramType.ToString().ToLower(); } set { ProgramType = (JWAoCProgramType)Enum.Parse(typeof(JWAoCProgramType), value.ToUpper()); } }
@@ -20,7 +20,6 @@ public class JWAoCProgram
     public string ProgramFilePath { get; set; } = string.Empty;
 
     [JsonPropertyName("handler")]
-
     public JWAoCProgramHandler? ProgramHandler { get; set; } = null;
 
     // static-get-methods
@@ -33,16 +32,18 @@ public class JWAoCProgram
     public IList<string> GetVersions(IJWAoCProgramExecutionService programExecutionService)
     {
         var result = programExecutionService.CallProgramWithLocalHTTPGet(this, "/versions");
-        if(result.StatusCode != 200) return new string[] { };
+        if (result.StatusCode != 200 || result.Content == null) return Array.Empty<string>();
 
         try
         {
-            return JsonSerializer.Deserialize<List<string>>(result.Content.ToString());
+            var content = result.Content.ToString();
+            if (content == null) return Array.Empty<string>();
+
+            var deserialisedResult = JsonSerializer.Deserialize<List<string>>(content);
+            if (deserialisedResult != null) return deserialisedResult;
         }
-        catch
-        {
-            return new string[] { };
-        }
+        catch { }
+        return Array.Empty<string>();
     }
 
     public bool IsAvailable()

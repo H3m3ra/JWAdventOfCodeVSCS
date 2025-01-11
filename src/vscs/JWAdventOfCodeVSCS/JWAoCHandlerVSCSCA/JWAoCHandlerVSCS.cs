@@ -10,7 +10,7 @@ namespace JWAoCHandlerVSCSCA;
 public class JWAoCHandlerVSCS : JWAoCHandlerCABase<JWAoCVSCSSettings>
 {
     public const string PROGRAM_NAME_FULL = "JWAdventOfCodeVSCSCA";
-    public const string PROGRAM_VERSION_FULL = "0.3.1.20250107211407";
+    public const string PROGRAM_VERSION_FULL = "0.3.2.20250109230053";
     public const string PROGRAM_NAME = "JWAoCVSCS";
     public static readonly string PROGRAM_VERSION = $"v{PROGRAM_VERSION_FULL[..^15]}";
     public const string PROGRAM_AUTHOR = "JWHemera";
