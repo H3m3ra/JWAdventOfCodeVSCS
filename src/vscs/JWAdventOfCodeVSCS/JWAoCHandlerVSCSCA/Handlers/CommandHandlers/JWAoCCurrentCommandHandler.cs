@@ -1,7 +1,7 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
 using JWAdventOfCodeHandlerLibrary.Handler;
 using JWAdventOfCodeHandlingLibrary.Services;
-using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.StringCommand.Commands;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 

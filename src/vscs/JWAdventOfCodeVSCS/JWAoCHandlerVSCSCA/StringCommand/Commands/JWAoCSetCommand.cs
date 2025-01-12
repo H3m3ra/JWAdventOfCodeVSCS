@@ -1,4 +1,6 @@
-﻿namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+﻿using JWAoCHandlerVSCSCA.Command;
+
+namespace JWAoCHandlerVSCSCA.StringCommand.Commands;
 
 public class JWAoCSetCommand : JWAoCStringCommandBase
 {

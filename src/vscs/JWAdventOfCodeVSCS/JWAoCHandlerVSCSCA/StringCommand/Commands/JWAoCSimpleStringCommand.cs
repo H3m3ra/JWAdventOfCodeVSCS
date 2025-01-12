@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
+using JWAoCHandlerVSCSCA.Command;
 
-namespace JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+namespace JWAoCHandlerVSCSCA.StringCommand.Commands;
 
 public class JWAoCSimpleStringCommand : JWAoCStringCommandBase
 {

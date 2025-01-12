@@ -1,21 +1,15 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Command;
-using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.StringCommand.Commands;
 
-namespace JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
+namespace JWAoCHandlerVSCSCA.StringCommand.Factories;
 
-public class JWAoCGetCommandFactory : IJWAoCStringCommandFactory
+public class JWAoCGetCommandFactory : JWAoCStringCommandFactoryBase
 {
     // get-methods
-    public IJWAoCStringCommand CreateCommandFromString(string source)
+    protected override IJWAoCStringCommand? CreateCommandFromString(string source, string trimmedSource, string simpleSource, string origin)
     {
-        string originalSource = source;
-
-        if (source.Trim().Length == 0) return null;
-
-        int nextIndex;
-
         source = source.TrimStart();
-        nextIndex = (nextIndex = source.IndexOf(' ')) < 0 ? source.Length : nextIndex;
+        int nextIndex = (nextIndex = source.IndexOf(' ')) < 0 ? source.Length : nextIndex;
         var commandName = source.Substring(0, nextIndex);
 
         source = source.Substring(nextIndex).TrimStart();
@@ -32,7 +26,7 @@ public class JWAoCGetCommandFactory : IJWAoCStringCommandFactory
         {
             Name = "get",
             PropertyName = propertyName,
-            Source = originalSource
+            Source = origin
         };
     }
 }

@@ -5,7 +5,7 @@ using JWAdventOfCodeHandlerLibrary.Settings;
 using JWAdventOfCodeHandlerLibrary.Settings.Check;
 using JWAdventOfCodeHandlerLibrary.Settings.Program;
 using JWAdventOfCodeHandlingLibrary.HTTP;
-using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.StringCommand.Commands;
 using System;
 using System.Text.Json;
 

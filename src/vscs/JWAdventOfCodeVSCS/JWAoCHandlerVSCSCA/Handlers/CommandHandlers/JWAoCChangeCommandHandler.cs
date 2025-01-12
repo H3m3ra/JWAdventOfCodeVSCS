@@ -1,5 +1,5 @@
 ﻿using JWAdventOfCodeHandlerLibrary.Handler;
-using JWAoCHandlerVSCSCA.Command.Commands.StringCommands;
+using JWAoCHandlerVSCSCA.StringCommand.Commands;
 
 namespace JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 public class JWAoCChangeCommandHandler : JWAoCSpecificCommandHandler<JWAoCChangeCommand>
