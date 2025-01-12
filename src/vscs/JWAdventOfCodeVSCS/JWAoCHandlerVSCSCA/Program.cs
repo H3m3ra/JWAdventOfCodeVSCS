@@ -1,11 +1,10 @@
 ﻿using JWAdventOfCodeHandlerLibrary;
 using JWAdventOfCodeHandlerLibrary.Command;
 using JWAdventOfCodeHandlerLibrary.Handler;
-using JWAdventOfCodeHandlerLibrary.Services;
 using JWAoCHandlerVSCSCA;
-using JWAoCHandlerVSCSCA.Command.Factories.StringCommandFactories;
 using JWAoCHandlerVSCSCA.Handlers.CommandHandlers;
 using JWAoCHandlerVSCSCA.Services;
+using JWAoCHandlerVSCSCA.StringCommand.Factories;
 
 static IJWAoCCA Build()
 {
